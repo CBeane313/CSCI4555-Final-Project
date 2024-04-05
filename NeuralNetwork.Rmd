@@ -1,0 +1,15 @@
+
+```{r}
+library(readr)
+```
+
+
+## Data Preparation
+
+```{r}
+# Source #
+# https://www.kaggle.com/datasets/whigmalwhim/steam-releases/data?select=game_data_all.csv #
+steamdata<-read_csv("steamGameData.csv")
+colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
+```
+
