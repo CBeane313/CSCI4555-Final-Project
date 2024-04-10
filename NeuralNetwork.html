@@ -376,35 +376,86 @@ display: none;
 ##   all_time_peak_date = col_date(format = &quot;&quot;)
 ## )
 ## ℹ Use `spec()` for the full column specifications.</code></pre>
-<pre class="r"><code>head(steamdata)%&gt;%kable()</code></pre>
-<table style="width:100%;">
+<pre class="r"><code>summary(steamdata)</code></pre>
+<pre><code>##        X1            game               link              release          
+##  Min.   :    0   Length:67571       Length:67571       Min.   :2006-02-07  
+##  1st Qu.:16892   Class :character   Class :character   1st Qu.:2018-01-26  
+##  Median :33785   Mode  :character   Mode  :character   Median :2020-03-29  
+##  Mean   :33785                                         Mean   :2019-09-19  
+##  3rd Qu.:50678                                         3rd Qu.:2021-11-16  
+##  Max.   :67570                                         Max.   :2023-12-31  
+##                                                                            
+##   peak_players     positive_reviews  negative_reviews   total_reviews    
+##  Min.   :      0   Min.   :      0   Min.   :     0.0   Min.   :      1  
+##  1st Qu.:      3   1st Qu.:      5   1st Qu.:     1.0   1st Qu.:      7  
+##  Median :      7   Median :     19   Median :     6.0   Median :     26  
+##  Mean   :    953   Mean   :   1274   Mean   :   216.9   Mean   :   1490  
+##  3rd Qu.:     46   3rd Qu.:     99   3rd Qu.:    29.0   3rd Qu.:    132  
+##  Max.   :3257248   Max.   :6307931   Max.   :927317.0   Max.   :7117776  
+##                                                                          
+##      rating      primary_genre      store_genres        publisher        
+##  Min.   :15.09   Length:67571       Length:67571       Length:67571      
+##  1st Qu.:56.53   Class :character   Class :character   Class :character  
+##  Median :66.76   Mode  :character   Mode  :character   Mode  :character  
+##  Mean   :65.29                                                           
+##  3rd Qu.:75.64                                                           
+##  Max.   :97.54                                                           
+##                                                                          
+##   developer         detected_technologies store_asset_mod_time
+##  Length:67571       Length:67571          Min.   :2011-01-12  
+##  Class :character   Class :character      1st Qu.:2019-08-23  
+##  Mode  :character   Mode  :character      Median :2021-05-07  
+##                                           Mean   :2020-10-12  
+##                                           3rd Qu.:2022-09-04  
+##                                           Max.   :2023-07-20  
+##                                           NA&#39;s   :296         
+##  review_percentage players_right_now   24_hour_peak       all_time_peak    
+##  Min.   :  0.00    Min.   :     0.0   Min.   :      0.0   Min.   :      0  
+##  1st Qu.: 64.00    1st Qu.:     0.0   1st Qu.:      0.0   1st Qu.:      3  
+##  Median : 79.00    Median :     0.0   Median :      1.0   Median :      7  
+##  Mean   : 74.84    Mean   :    77.5   Mean   :    120.6   Mean   :    963  
+##  3rd Qu.: 90.00    3rd Qu.:     0.0   3rd Qu.:      2.0   3rd Qu.:     47  
+##  Max.   :100.00    Max.   :735992.0   Max.   :1147030.0   Max.   :3257248  
+##  NA&#39;s   :19804     NA&#39;s   :6          NA&#39;s   :6                            
+##  all_time_peak_date  
+##  Min.   :2007-03-08  
+##  1st Qu.:2018-09-02  
+##  Median :2020-09-28  
+##  Mean   :2020-03-30  
+##  3rd Qu.:2022-03-06  
+##  Max.   :2023-07-19  
+##  NA&#39;s   :6</code></pre>
+</div>
+<div id="data-preprocessing" class="section level3">
+<h3>Data Preprocessing</h3>
+<pre class="r"><code>#rename id column(it was missing one, and received default name)
+colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;
+steamdata = subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+head(steamdata)%&gt;%kable()</code></pre>
+<table>
 <colgroup>
 <col width="0%" />
-<col width="6%" />
-<col width="2%" />
+<col width="7%" />
 <col width="2%" />
 <col width="2%" />
 <col width="3%" />
 <col width="3%" />
-<col width="2%" />
+<col width="3%" />
 <col width="1%" />
-<col width="2%" />
-<col width="10%" />
 <col width="3%" />
-<col width="2%" />
-<col width="36%" />
+<col width="4%" />
 <col width="3%" />
-<col width="3%" />
-<col width="3%" />
-<col width="2%" />
+<col width="44%" />
+<col width="4%" />
+<col width="4%" />
 <col width="2%" />
 <col width="3%" />
+<col width="4%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th align="right">X1</th>
+<th align="right">id</th>
 <th align="left">game</th>
-<th align="left">link</th>
 <th align="left">release</th>
 <th align="right">peak_players</th>
 <th align="right">positive_reviews</th>
@@ -412,11 +463,9 @@ display: none;
 <th align="right">total_reviews</th>
 <th align="right">rating</th>
 <th align="left">primary_genre</th>
-<th align="left">store_genres</th>
 <th align="left">publisher</th>
 <th align="left">developer</th>
 <th align="left">detected_technologies</th>
-<th align="left">store_asset_mod_time</th>
 <th align="right">review_percentage</th>
 <th align="right">players_right_now</th>
 <th align="right">24_hour_peak</th>
@@ -428,7 +477,6 @@ display: none;
 <tr class="odd">
 <td align="right">0</td>
 <td align="left">Pizza Tower</td>
-<td align="left">/app/2231450/</td>
 <td align="left">2023-01-26</td>
 <td align="right">4529</td>
 <td align="right">19807</td>
@@ -436,11 +484,9 @@ display: none;
 <td align="right">20034</td>
 <td align="right">96.39</td>
 <td align="left">Action (1)</td>
-<td align="left">Action (1), Indie (23)</td>
 <td align="left">Tour De Pizza</td>
 <td align="left">Tour De Pizza</td>
 <td align="left">Engine.GameMaker; SDK.FMOD</td>
-<td align="left">2023-01-10</td>
 <td align="right">98</td>
 <td align="right">3101</td>
 <td align="right">3606</td>
@@ -450,7 +496,6 @@ display: none;
 <tr class="even">
 <td align="right">1</td>
 <td align="left">Resident Evil 4</td>
-<td align="left">/app/2050650/</td>
 <td align="left">2023-03-24</td>
 <td align="right">168191</td>
 <td align="right">61752</td>
@@ -458,11 +503,9 @@ display: none;
 <td align="right">63368</td>
 <td align="right">95.75</td>
 <td align="left">Action (1)</td>
-<td align="left">Action (1), Adventure (25)</td>
 <td align="left">CAPCOM Co. Ltd.</td>
 <td align="left">CAPCOM Co. Ltd.</td>
 <td align="left">Engine.RE_Engine; SDK.AMD_GPU_Services</td>
-<td align="left">2023-03-29</td>
 <td align="right">97</td>
 <td align="right">46289</td>
 <td align="right">47164</td>
@@ -472,7 +515,6 @@ display: none;
 <tr class="odd">
 <td align="right">2</td>
 <td align="left">The Murder of Sonic the Hedgehog</td>
-<td align="left">/app/2324650/</td>
 <td align="left">2023-03-31</td>
 <td align="right">15543</td>
 <td align="right">12643</td>
@@ -480,12 +522,9 @@ display: none;
 <td align="right">12856</td>
 <td align="right">95.54</td>
 <td align="left">Casual (4)</td>
-<td align="left">Casual (4), Free to Play (37), Indie (23), Simulation
-(28)</td>
 <td align="left">SEGA</td>
 <td align="left">SEGA</td>
 <td align="left">Engine.Unity; SDK.UnityBurst; SDK.cURL</td>
-<td align="left">2023-03-24</td>
 <td align="right">98</td>
 <td align="right">618</td>
 <td align="right">776</td>
@@ -495,7 +534,6 @@ display: none;
 <tr class="even">
 <td align="right">3</td>
 <td align="left">Pineapple on pizza</td>
-<td align="left">/app/2263010/</td>
 <td align="left">2023-03-28</td>
 <td align="right">1415</td>
 <td align="right">11717</td>
@@ -503,11 +541,9 @@ display: none;
 <td align="right">11926</td>
 <td align="right">95.39</td>
 <td align="left">Indie (23)</td>
-<td align="left">Casual (4), Free to Play (37), Indie (23)</td>
 <td align="left">Majorariatto</td>
 <td align="left">Majorariatto</td>
 <td align="left">Engine.Unity; SDK.cURL</td>
-<td align="left">2023-03-22</td>
 <td align="right">98</td>
 <td align="right">101</td>
 <td align="right">101</td>
@@ -517,7 +553,6 @@ display: none;
 <tr class="odd">
 <td align="right">4</td>
 <td align="left">Hi-Fi RUSH</td>
-<td align="left">/app/1817230/</td>
 <td align="left">2023-01-25</td>
 <td align="right">6132</td>
 <td align="right">14152</td>
@@ -525,14 +560,12 @@ display: none;
 <td align="right">14476</td>
 <td align="right">95.09</td>
 <td align="left">Action (1)</td>
-<td align="left">Action (1)</td>
 <td align="left">Bethesda Softworks</td>
 <td align="left">Tango Gameworks</td>
 <td align="left">Engine.Unreal; SDK.Intel_OID; SDK.Intel_XeSS;
 SDK.NVIDIA_APEX; SDK.NVIDIA_DLSS; SDK.NVIDIA_GeForce_Now;
 SDK.NVIDIA_Nsight_Aftermath; SDK.NVIDIA_PhysX; SDK.Vorbis; SDK.Wwise;
 SDK.XAudio2; SDK.iZotope</td>
-<td align="left">2023-04-11</td>
 <td align="right">97</td>
 <td align="right">630</td>
 <td align="right">664</td>
@@ -542,7 +575,6 @@ SDK.XAudio2; SDK.iZotope</td>
 <tr class="even">
 <td align="right">5</td>
 <td align="left">东北之夏</td>
-<td align="left">/app/2121360/</td>
 <td align="left">2023-01-09</td>
 <td align="right">8672</td>
 <td align="right">8891</td>
@@ -550,11 +582,9 @@ SDK.XAudio2; SDK.iZotope</td>
 <td align="right">9056</td>
 <td align="right">95.08</td>
 <td align="left">RPG (3)</td>
-<td align="left">Free to Play (37), RPG (3)</td>
 <td align="left">庄不纯工作室</td>
 <td align="left">庄不纯工作室</td>
 <td align="left">Engine.Unity</td>
-<td align="left">2022-09-29</td>
 <td align="right">98</td>
 <td align="right">62</td>
 <td align="right">75</td>
@@ -563,11 +593,6 @@ SDK.XAudio2; SDK.iZotope</td>
 </tr>
 </tbody>
 </table>
-</div>
-<div id="data-preprocessing" class="section level3">
-<h3>Data Preprocessing</h3>
-<pre class="r"><code>#rename id column(it was missing one, and received default name)
-colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;</code></pre>
 </div>
 </div>
 

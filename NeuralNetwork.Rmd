@@ -12,12 +12,22 @@ library(dplyr)
 ### Load Data
 ```{r}
 steamdata<-read_csv("steamGameData.csv")
-head(steamdata)%>%kable()
+summary(steamdata)
 ```
 
 ### Data Preprocessing
 ```{r}
 #rename id column(it was missing one, and received default name)
 colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
+steamdata = subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+
+head(steamdata)%>%kable()
+
+getengine = function(enginetext){
+  ifelse(grepl("Engine.",enginetext,fixed=TRUE), strsplit(strsplit(enginetext, split = ";")[[1]][1], split = "Engine.")[[1]][2] , "NA")
+    
+}
+steamdata$detected_technologies = lapply(steamdata$detected_technologies,FUN = getengine)
+
 ```
 
