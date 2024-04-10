@@ -9,10 +9,15 @@ library(dplyr)
 
 ## Data Preparation
 
+### Load Data
 ```{r}
 steamdata<-read_csv("steamGameData.csv")
-colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
-
 head(steamdata)%>%kable()
+```
+
+### Data Preprocessing
+```{r}
+#rename id column(it was missing one, and received default name)
+colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
 ```
 

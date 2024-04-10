@@ -354,6 +354,8 @@ display: none;
 
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
+<div id="load-data" class="section level3">
+<h3>Load Data</h3>
 <pre class="r"><code>steamdata&lt;-read_csv(&quot;steamGameData.csv&quot;)</code></pre>
 <pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
 <pre><code>## 
@@ -374,9 +376,7 @@ display: none;
 ##   all_time_peak_date = col_date(format = &quot;&quot;)
 ## )
 ## ℹ Use `spec()` for the full column specifications.</code></pre>
-<pre class="r"><code>colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;
-
-head(steamdata)%&gt;%kable()</code></pre>
+<pre class="r"><code>head(steamdata)%&gt;%kable()</code></pre>
 <table style="width:100%;">
 <colgroup>
 <col width="0%" />
@@ -402,7 +402,7 @@ head(steamdata)%&gt;%kable()</code></pre>
 </colgroup>
 <thead>
 <tr class="header">
-<th align="right">id</th>
+<th align="right">X1</th>
 <th align="left">game</th>
 <th align="left">link</th>
 <th align="left">release</th>
@@ -563,6 +563,12 @@ SDK.XAudio2; SDK.iZotope</td>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="data-preprocessing" class="section level3">
+<h3>Data Preprocessing</h3>
+<pre class="r"><code>#rename id column(it was missing one, and received default name)
+colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;</code></pre>
+</div>
 </div>
 
 
