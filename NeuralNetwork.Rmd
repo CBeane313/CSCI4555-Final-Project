@@ -36,10 +36,13 @@ steamdata <- read_csv("steamGameData.csv")
 colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
 
 #Drop columns that will definitely not be useful or that are redundant 
-steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time, players_right_now))
 
 #Extract game engine from detected_technologies
 steamdata$engine <- gsub("^Engine\\.([^;]+).*", "\\1", steamdata$detected_technologies)
+
+#now removes detected technologies
+steamdata <- subset(steamdata, select = -c(detected_technologies))
 
 #Show head of data
 head(steamdata)%>%kable()
