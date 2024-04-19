@@ -4,6 +4,7 @@
 library(readr)
 library(knitr)
 library(dplyr)
+library(stringr)
 ```
 
 # Steam Game Data Neural Network Project
@@ -41,13 +42,16 @@ steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_t
 #Drop NA observations 
 steamdata <- na.omit(steamdata)
 
-#Extract game engine from detected_technologies
-steamdata$engine <- gsub("^Engine\\.([^;]+).*", "\\1", steamdata$detected_technologies)
 
-<<<<<<< HEAD
+#Extract game engine from detected_technologies
+steamdata$engine <- ifelse(str_detect(steamdata$detected_technologies, "Engine\\."), str_extract(steamdata$detected_technologies, "(?<=Engine\\.)(\\w+)"), NA)
+
+#Drop NA observations 
+steamdata <- na.omit(steamdata)
+
 #now removes detected technologies
 steamdata <- subset(steamdata, select = -c(detected_technologies))
-=======
+
 #Remove (#) from primary genre
 steamdata$primary_genre <- gsub("\\s*\\(\\d+\\)", "", steamdata$primary_genre)
 
@@ -60,7 +64,7 @@ steamdata$primary_genre <- as.factor(steamdata$primary_genre)
 #Make dates actual dates
 steamdata$release <- as.Date(steamdata$release)
 steamdata$all_time_peak_date <- as.Date(steamdata$all_time_peak_date)
->>>>>>> d7358c701b8f8eaf50eeffe2ab1fa1d4d328adaf
+
 
 #Show head of data
 head(steamdata)%>%kable()
