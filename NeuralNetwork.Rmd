@@ -1,32 +1,47 @@
 
 ```{r,echo=FALSE, message=FALSE}
+#Load packages
 library(readr)
 library(knitr)
 library(dplyr)
 ```
 
+# Steam Game Data Neural Network Project
+
+___ 
+
+##### Table of Contents  
+1. [Data Preperation](#dataprep)
+    a. [Load Data](#dataload)
+    b. [Data Preproccessing](#dataprepro)
+    
+___
+
+<a name="dataprep"></a>
 
 ## Data Preparation
 
+<a name="dataload"></a>
+
 ### Load Data
-```{r}
-steamdata<-read_csv("steamGameData.csv")
-summary(steamdata)
+```{r,warning = FALSE}
+steamdata <- read_csv("steamGameData.csv")
 ```
+
+<a name="dataprepro"></a>
 
 ### Data Preprocessing
 ```{r}
-#rename id column(it was missing one, and received default name)
+#Rename id column(it was missing one, and received default name)
 colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
-steamdata = subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
 
+#Drop columns that will definitely not be useful or that are redundant 
+steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+
+#Extract game engine from detected_technologies
+steamdata$engine <- gsub("^Engine\\.([^;]+).*", "\\1", steamdata$detected_technologies)
+
+#Show head of data
 head(steamdata)%>%kable()
-
-getengine = function(enginetext){
-  ifelse(grepl("Engine.",enginetext,fixed=TRUE), strsplit(strsplit(enginetext, split = ";")[[1]][1], split = "Engine.")[[1]][2] , "NA")
-    
-}
-steamdata$detected_technologies = lapply(steamdata$detected_technologies,FUN = getengine)
-
 ```
 

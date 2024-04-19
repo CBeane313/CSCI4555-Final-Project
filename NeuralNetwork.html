@@ -352,12 +352,27 @@ display: none;
 </div>
 
 
+<div id="steam-game-data-neural-network-project" class="section level1">
+<h1>Steam Game Data Neural Network Project</h1>
+<hr />
+<div id="table-of-contents" class="section level5">
+<h5>Table of Contents</h5>
+<ol style="list-style-type: decimal">
+<li><a href="#dataprep">Data Preperation</a>
+<ol style="list-style-type: lower-alpha">
+<li><a href="#dataload">Load Data</a></li>
+<li><a href="#dataprepro">Data Preproccessing</a></li>
+</ol></li>
+</ol>
+<hr />
+<p><a name="dataprep"></a></p>
+</div>
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
+<p><a name="dataload"></a></p>
 <div id="load-data" class="section level3">
 <h3>Load Data</h3>
-<pre class="r"><code>steamdata&lt;-read_csv(&quot;steamGameData.csv&quot;)</code></pre>
-<pre><code>## Warning: Missing column names filled in: &#39;X1&#39; [1]</code></pre>
+<pre class="r"><code>steamdata &lt;- read_csv(&quot;steamGameData.csv&quot;)</code></pre>
 <pre><code>## 
 ## ── Column specification ────────────────────────────────────────────────────────
 ## cols(
@@ -376,61 +391,20 @@ display: none;
 ##   all_time_peak_date = col_date(format = &quot;&quot;)
 ## )
 ## ℹ Use `spec()` for the full column specifications.</code></pre>
-<pre class="r"><code>summary(steamdata)</code></pre>
-<pre><code>##        X1            game               link              release          
-##  Min.   :    0   Length:67571       Length:67571       Min.   :2006-02-07  
-##  1st Qu.:16892   Class :character   Class :character   1st Qu.:2018-01-26  
-##  Median :33785   Mode  :character   Mode  :character   Median :2020-03-29  
-##  Mean   :33785                                         Mean   :2019-09-19  
-##  3rd Qu.:50678                                         3rd Qu.:2021-11-16  
-##  Max.   :67570                                         Max.   :2023-12-31  
-##                                                                            
-##   peak_players     positive_reviews  negative_reviews   total_reviews    
-##  Min.   :      0   Min.   :      0   Min.   :     0.0   Min.   :      1  
-##  1st Qu.:      3   1st Qu.:      5   1st Qu.:     1.0   1st Qu.:      7  
-##  Median :      7   Median :     19   Median :     6.0   Median :     26  
-##  Mean   :    953   Mean   :   1274   Mean   :   216.9   Mean   :   1490  
-##  3rd Qu.:     46   3rd Qu.:     99   3rd Qu.:    29.0   3rd Qu.:    132  
-##  Max.   :3257248   Max.   :6307931   Max.   :927317.0   Max.   :7117776  
-##                                                                          
-##      rating      primary_genre      store_genres        publisher        
-##  Min.   :15.09   Length:67571       Length:67571       Length:67571      
-##  1st Qu.:56.53   Class :character   Class :character   Class :character  
-##  Median :66.76   Mode  :character   Mode  :character   Mode  :character  
-##  Mean   :65.29                                                           
-##  3rd Qu.:75.64                                                           
-##  Max.   :97.54                                                           
-##                                                                          
-##   developer         detected_technologies store_asset_mod_time
-##  Length:67571       Length:67571          Min.   :2011-01-12  
-##  Class :character   Class :character      1st Qu.:2019-08-23  
-##  Mode  :character   Mode  :character      Median :2021-05-07  
-##                                           Mean   :2020-10-12  
-##                                           3rd Qu.:2022-09-04  
-##                                           Max.   :2023-07-20  
-##                                           NA&#39;s   :296         
-##  review_percentage players_right_now   24_hour_peak       all_time_peak    
-##  Min.   :  0.00    Min.   :     0.0   Min.   :      0.0   Min.   :      0  
-##  1st Qu.: 64.00    1st Qu.:     0.0   1st Qu.:      0.0   1st Qu.:      3  
-##  Median : 79.00    Median :     0.0   Median :      1.0   Median :      7  
-##  Mean   : 74.84    Mean   :    77.5   Mean   :    120.6   Mean   :    963  
-##  3rd Qu.: 90.00    3rd Qu.:     0.0   3rd Qu.:      2.0   3rd Qu.:     47  
-##  Max.   :100.00    Max.   :735992.0   Max.   :1147030.0   Max.   :3257248  
-##  NA&#39;s   :19804     NA&#39;s   :6          NA&#39;s   :6                            
-##  all_time_peak_date  
-##  Min.   :2007-03-08  
-##  1st Qu.:2018-09-02  
-##  Median :2020-09-28  
-##  Mean   :2020-03-30  
-##  3rd Qu.:2022-03-06  
-##  Max.   :2023-07-19  
-##  NA&#39;s   :6</code></pre>
+<p><a name="dataprepro"></a></p>
 </div>
 <div id="data-preprocessing" class="section level3">
 <h3>Data Preprocessing</h3>
-<pre class="r"><code>#rename id column(it was missing one, and received default name)
+<pre class="r"><code>#Rename id column(it was missing one, and received default name)
 colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;
-steamdata = subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+
+#Drop columns that will definitely not be useful or that are redundant 
+steamdata &lt;- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+
+#Extract game engine from detected_technologies
+steamdata$engine &lt;- gsub(&quot;^Engine\\.([^;]+).*&quot;, &quot;\\1&quot;, steamdata$detected_technologies)
+
+#Show head of data
 head(steamdata)%&gt;%kable()</code></pre>
 <table>
 <colgroup>
@@ -445,12 +419,13 @@ head(steamdata)%&gt;%kable()</code></pre>
 <col width="3%" />
 <col width="4%" />
 <col width="3%" />
-<col width="44%" />
-<col width="4%" />
-<col width="4%" />
+<col width="43%" />
+<col width="3%" />
+<col width="3%" />
 <col width="2%" />
 <col width="3%" />
 <col width="4%" />
+<col width="2%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -471,6 +446,7 @@ head(steamdata)%&gt;%kable()</code></pre>
 <th align="right">24_hour_peak</th>
 <th align="right">all_time_peak</th>
 <th align="left">all_time_peak_date</th>
+<th align="left">engine</th>
 </tr>
 </thead>
 <tbody>
@@ -492,6 +468,7 @@ head(steamdata)%&gt;%kable()</code></pre>
 <td align="right">3606</td>
 <td align="right">4529</td>
 <td align="left">2023-03-25</td>
+<td align="left">GameMaker</td>
 </tr>
 <tr class="even">
 <td align="right">1</td>
@@ -511,6 +488,7 @@ head(steamdata)%&gt;%kable()</code></pre>
 <td align="right">47164</td>
 <td align="right">168191</td>
 <td align="left">2023-03-25</td>
+<td align="left">RE_Engine</td>
 </tr>
 <tr class="odd">
 <td align="right">2</td>
@@ -530,6 +508,7 @@ head(steamdata)%&gt;%kable()</code></pre>
 <td align="right">776</td>
 <td align="right">15543</td>
 <td align="left">2023-03-31</td>
+<td align="left">Unity</td>
 </tr>
 <tr class="even">
 <td align="right">3</td>
@@ -549,6 +528,7 @@ head(steamdata)%&gt;%kable()</code></pre>
 <td align="right">101</td>
 <td align="right">1415</td>
 <td align="left">2023-03-28</td>
+<td align="left">Unity</td>
 </tr>
 <tr class="odd">
 <td align="right">4</td>
@@ -571,6 +551,7 @@ SDK.XAudio2; SDK.iZotope</td>
 <td align="right">664</td>
 <td align="right">6132</td>
 <td align="left">2023-01-29</td>
+<td align="left">Unreal</td>
 </tr>
 <tr class="even">
 <td align="right">5</td>
@@ -590,9 +571,11 @@ SDK.XAudio2; SDK.iZotope</td>
 <td align="right">75</td>
 <td align="right">8672</td>
 <td align="left">2023-01-10</td>
+<td align="left">Unity</td>
 </tr>
 </tbody>
 </table>
+</div>
 </div>
 </div>
 
