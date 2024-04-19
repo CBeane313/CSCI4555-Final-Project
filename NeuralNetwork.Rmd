@@ -38,7 +38,7 @@ colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
 #Drop columns that will definitely not be useful or that are redundant 
 steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
 
-#Drop NA observations
+#Drop NA observations 
 steamdata <- na.omit(steamdata)
 
 #Extract game engine from detected_technologies
