@@ -25,7 +25,7 @@ ___
 
 ### Load Data
 ```{r,warning = FALSE}
-steamdata <- read_csv("steamGameData.csv")
+steamdata <- read_csv("steamGameData.csv", na = c("nan"))
 ```
 
 <a name="dataprepro"></a>
@@ -38,8 +38,24 @@ colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
 #Drop columns that will definitely not be useful or that are redundant 
 steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
 
+#Drop NA observations
+steamdata <- na.omit(steamdata)
+
 #Extract game engine from detected_technologies
 steamdata$engine <- gsub("^Engine\\.([^;]+).*", "\\1", steamdata$detected_technologies)
+
+#Remove (#) from primary genre
+steamdata$primary_genre <- gsub("\\s*\\(\\d+\\)", "", steamdata$primary_genre)
+
+#Make columns factors rather than strings
+steamdata$engine <- as.factor(steamdata$engine)
+steamdata$publisher <- as.factor(steamdata$publisher)
+steamdata$developer <- as.factor(steamdata$developer)
+steamdata$primary_genre <- as.factor(steamdata$primary_genre)
+
+#Make dates actual dates
+steamdata$release <- as.Date(steamdata$release)
+steamdata$all_time_peak_date <- as.Date(steamdata$all_time_peak_date)
 
 #Show head of data
 head(steamdata)%>%kable()
