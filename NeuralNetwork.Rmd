@@ -5,6 +5,8 @@ library(readr)
 library(knitr)
 library(dplyr)
 library(stringr)
+library(keras)
+library(Metrics)
 ```
 
 # Steam Game Data Neural Network Project
@@ -15,6 +17,9 @@ ___
 1. [Data Preperation](#dataprep)
     a. [Load Data](#dataload)
     b. [Data Preproccessing](#dataprepro)
+2. [Data Splitting](#datasplit)
+4. [Linear Model for Comparison](#lmmodel)
+4. [Neural Network Model](#NNmod)
     
 ___
 
@@ -35,9 +40,10 @@ steamdata <- read_csv("steamGameData.csv", na = c("nan"))
 ```{r}
 #Rename id column(it was missing one, and received default name)
 colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
+colnames(steamdata)[which(colnames(steamdata) == "24_hour_peak")] <- "twenty4_hr_peak"
 
-#Drop columns that will definitely not be useful or that are redundant 
-steamdata <- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time, players_right_now))
+#Drop columns that will not be useful, that are redundant, and to keep the number of features reasonable
+# steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine))
 
 #Drop NA observations 
 steamdata <- na.omit(steamdata)
@@ -57,16 +63,88 @@ steamdata$primary_genre <- gsub("\\s*\\(\\d+\\)", "", steamdata$primary_genre)
 
 #Make columns factors rather than strings
 steamdata$engine <- as.factor(steamdata$engine)
-steamdata$publisher <- as.factor(steamdata$publisher)
 steamdata$developer <- as.factor(steamdata$developer)
 steamdata$primary_genre <- as.factor(steamdata$primary_genre)
 
 #Make dates actual dates
 steamdata$release <- as.Date(steamdata$release)
-steamdata$all_time_peak_date <- as.Date(steamdata$all_time_peak_date)
 
-
+steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine, peak_players))
 #Show head of data
 head(steamdata)%>%kable()
 ```
+
+<a name="datasplit"></a>
+
+## Data Splitting
+
+```{r}
+## 75% of the sample size
+smp_size <- floor(0.75 * nrow(steamdata))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(steamdata)), size = smp_size)
+
+train <- steamdata[train_ind, ]
+test <- steamdata[-train_ind, ]
+```
+
+<a name="lmmodel"></a>
+
+## Linear Model For Comparison
+
+```{r}
+linearmod <- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage, data = steamdata)
+
+# Get predicted values
+predicted_values <- predict(linearmod, newdata = test)
+
+# Calculate MAE
+mae_value <- mae(test$rating, predicted_values)
+
+sum<-summary(linearmod)
+cat("R Squared =",sum$r.squared)
+cat("MAE =",mae_value)
+```
+
+<a name="NNmod"></a>
+
+## Neural Network Model
+
+```{r}
+# Define R-squared for evaluation
+r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
+  SS_res <- k_sum(k_square(y_true - y_pred))
+  SS_tot <- k_sum(k_square(y_true - k_mean(y_true)))
+  return(1 - SS_res / (SS_tot + k_epsilon()))
+})
+
+model = keras_model_sequential() %>%
+  layer_dense(units = 64, activation = "relu",input_shape=(4)) %>%
+  layer_dense(units = 64, activation = "sigmoid") %>%
+  layer_dense(units = 32, activation = "sigmoid") %>%
+  layer_dense(units = 1, activation = "linear")
+
+model %>% compile(
+  loss = "mse",
+  optimizer = "adam", 
+  metrics = c("mean_absolute_error", r_squared)
+)
+
+trainx <- as.matrix(subset(train, select = -c(rating)))
+
+model %>%
+  fit(
+    x = trainx,
+    y = train$rating,
+    epochs = 15
+  )
+
+testx <- as.matrix(subset(test, select = -c(rating)))
+
+# R Squared in the evaluation is not calculated properly
+results <- model %>% evaluate(testx, test$rating)
+```
+
 

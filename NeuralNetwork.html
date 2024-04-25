@@ -363,6 +363,9 @@ display: none;
 <li><a href="#dataload">Load Data</a></li>
 <li><a href="#dataprepro">Data Preproccessing</a></li>
 </ol></li>
+<li><a href="#datasplit">Data Splitting</a></li>
+<li><a href="#lmmodel">Linear Model for Comparison</a></li>
+<li><a href="#NNmod">Neural Network Model</a></li>
 </ol>
 <hr />
 <p><a name="dataprep"></a></p>
@@ -372,7 +375,7 @@ display: none;
 <p><a name="dataload"></a></p>
 <div id="load-data" class="section level3">
 <h3>Load Data</h3>
-<pre class="r"><code>steamdata &lt;- read_csv(&quot;steamGameData.csv&quot;)</code></pre>
+<pre class="r"><code>steamdata &lt;- read_csv(&quot;steamGameData.csv&quot;, na = c(&quot;nan&quot;))</code></pre>
 <pre><code>## 
 ## ── Column specification ────────────────────────────────────────────────────────
 ## cols(
@@ -397,185 +400,198 @@ display: none;
 <h3>Data Preprocessing</h3>
 <pre class="r"><code>#Rename id column(it was missing one, and received default name)
 colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;
+colnames(steamdata)[which(colnames(steamdata) == &quot;24_hour_peak&quot;)] &lt;- &quot;twenty4_hr_peak&quot;
 
-#Drop columns that will definitely not be useful or that are redundant 
-steamdata &lt;- subset(steamdata, select = -c(link, store_genres, store_asset_mod_time))
+#Drop columns that will not be useful, that are redundant, and to keep the number of features reasonable
+# steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine))
+
+#Drop NA observations 
+steamdata &lt;- na.omit(steamdata)
+
 
 #Extract game engine from detected_technologies
-steamdata$engine &lt;- gsub(&quot;^Engine\\.([^;]+).*&quot;, &quot;\\1&quot;, steamdata$detected_technologies)
+steamdata$engine &lt;- ifelse(str_detect(steamdata$detected_technologies, &quot;Engine\\.&quot;), str_extract(steamdata$detected_technologies, &quot;(?&lt;=Engine\\.)(\\w+)&quot;), NA)
 
+#Drop NA observations 
+steamdata &lt;- na.omit(steamdata)
+
+#now removes detected technologies
+steamdata &lt;- subset(steamdata, select = -c(detected_technologies))
+
+#Remove (#) from primary genre
+steamdata$primary_genre &lt;- gsub(&quot;\\s*\\(\\d+\\)&quot;, &quot;&quot;, steamdata$primary_genre)
+
+#Make columns factors rather than strings
+steamdata$engine &lt;- as.factor(steamdata$engine)
+steamdata$developer &lt;- as.factor(steamdata$developer)
+steamdata$primary_genre &lt;- as.factor(steamdata$primary_genre)
+
+#Make dates actual dates
+steamdata$release &lt;- as.Date(steamdata$release)
+
+steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine, peak_players))
 #Show head of data
 head(steamdata)%&gt;%kable()</code></pre>
-<table>
+<table style="width:100%;">
 <colgroup>
-<col width="0%" />
-<col width="7%" />
-<col width="2%" />
-<col width="2%" />
-<col width="3%" />
-<col width="3%" />
-<col width="3%" />
-<col width="1%" />
-<col width="3%" />
-<col width="4%" />
-<col width="3%" />
-<col width="43%" />
-<col width="3%" />
-<col width="3%" />
-<col width="2%" />
-<col width="3%" />
-<col width="4%" />
-<col width="2%" />
+<col width="23%" />
+<col width="23%" />
+<col width="19%" />
+<col width="9%" />
+<col width="24%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th align="right">id</th>
-<th align="left">game</th>
-<th align="left">release</th>
-<th align="right">peak_players</th>
 <th align="right">positive_reviews</th>
 <th align="right">negative_reviews</th>
 <th align="right">total_reviews</th>
 <th align="right">rating</th>
-<th align="left">primary_genre</th>
-<th align="left">publisher</th>
-<th align="left">developer</th>
-<th align="left">detected_technologies</th>
 <th align="right">review_percentage</th>
-<th align="right">players_right_now</th>
-<th align="right">24_hour_peak</th>
-<th align="right">all_time_peak</th>
-<th align="left">all_time_peak_date</th>
-<th align="left">engine</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">0</td>
-<td align="left">Pizza Tower</td>
-<td align="left">2023-01-26</td>
-<td align="right">4529</td>
 <td align="right">19807</td>
 <td align="right">227</td>
 <td align="right">20034</td>
 <td align="right">96.39</td>
-<td align="left">Action (1)</td>
-<td align="left">Tour De Pizza</td>
-<td align="left">Tour De Pizza</td>
-<td align="left">Engine.GameMaker; SDK.FMOD</td>
 <td align="right">98</td>
-<td align="right">3101</td>
-<td align="right">3606</td>
-<td align="right">4529</td>
-<td align="left">2023-03-25</td>
-<td align="left">GameMaker</td>
 </tr>
 <tr class="even">
-<td align="right">1</td>
-<td align="left">Resident Evil 4</td>
-<td align="left">2023-03-24</td>
-<td align="right">168191</td>
 <td align="right">61752</td>
 <td align="right">1616</td>
 <td align="right">63368</td>
 <td align="right">95.75</td>
-<td align="left">Action (1)</td>
-<td align="left">CAPCOM Co. Ltd.</td>
-<td align="left">CAPCOM Co. Ltd.</td>
-<td align="left">Engine.RE_Engine; SDK.AMD_GPU_Services</td>
 <td align="right">97</td>
-<td align="right">46289</td>
-<td align="right">47164</td>
-<td align="right">168191</td>
-<td align="left">2023-03-25</td>
-<td align="left">RE_Engine</td>
 </tr>
 <tr class="odd">
-<td align="right">2</td>
-<td align="left">The Murder of Sonic the Hedgehog</td>
-<td align="left">2023-03-31</td>
-<td align="right">15543</td>
 <td align="right">12643</td>
 <td align="right">213</td>
 <td align="right">12856</td>
 <td align="right">95.54</td>
-<td align="left">Casual (4)</td>
-<td align="left">SEGA</td>
-<td align="left">SEGA</td>
-<td align="left">Engine.Unity; SDK.UnityBurst; SDK.cURL</td>
 <td align="right">98</td>
-<td align="right">618</td>
-<td align="right">776</td>
-<td align="right">15543</td>
-<td align="left">2023-03-31</td>
-<td align="left">Unity</td>
 </tr>
 <tr class="even">
-<td align="right">3</td>
-<td align="left">Pineapple on pizza</td>
-<td align="left">2023-03-28</td>
-<td align="right">1415</td>
 <td align="right">11717</td>
 <td align="right">209</td>
 <td align="right">11926</td>
 <td align="right">95.39</td>
-<td align="left">Indie (23)</td>
-<td align="left">Majorariatto</td>
-<td align="left">Majorariatto</td>
-<td align="left">Engine.Unity; SDK.cURL</td>
 <td align="right">98</td>
-<td align="right">101</td>
-<td align="right">101</td>
-<td align="right">1415</td>
-<td align="left">2023-03-28</td>
-<td align="left">Unity</td>
 </tr>
 <tr class="odd">
-<td align="right">4</td>
-<td align="left">Hi-Fi RUSH</td>
-<td align="left">2023-01-25</td>
-<td align="right">6132</td>
 <td align="right">14152</td>
 <td align="right">324</td>
 <td align="right">14476</td>
 <td align="right">95.09</td>
-<td align="left">Action (1)</td>
-<td align="left">Bethesda Softworks</td>
-<td align="left">Tango Gameworks</td>
-<td align="left">Engine.Unreal; SDK.Intel_OID; SDK.Intel_XeSS;
-SDK.NVIDIA_APEX; SDK.NVIDIA_DLSS; SDK.NVIDIA_GeForce_Now;
-SDK.NVIDIA_Nsight_Aftermath; SDK.NVIDIA_PhysX; SDK.Vorbis; SDK.Wwise;
-SDK.XAudio2; SDK.iZotope</td>
 <td align="right">97</td>
-<td align="right">630</td>
-<td align="right">664</td>
-<td align="right">6132</td>
-<td align="left">2023-01-29</td>
-<td align="left">Unreal</td>
 </tr>
 <tr class="even">
-<td align="right">5</td>
-<td align="left">东北之夏</td>
-<td align="left">2023-01-09</td>
-<td align="right">8672</td>
 <td align="right">8891</td>
 <td align="right">165</td>
 <td align="right">9056</td>
 <td align="right">95.08</td>
-<td align="left">RPG (3)</td>
-<td align="left">庄不纯工作室</td>
-<td align="left">庄不纯工作室</td>
-<td align="left">Engine.Unity</td>
 <td align="right">98</td>
-<td align="right">62</td>
-<td align="right">75</td>
-<td align="right">8672</td>
-<td align="left">2023-01-10</td>
-<td align="left">Unity</td>
 </tr>
 </tbody>
 </table>
+<p><a name="datasplit"></a></p>
 </div>
+</div>
+<div id="data-splitting" class="section level2">
+<h2>Data Splitting</h2>
+<pre class="r"><code>## 75% of the sample size
+smp_size &lt;- floor(0.75 * nrow(steamdata))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind &lt;- sample(seq_len(nrow(steamdata)), size = smp_size)
+
+train &lt;- steamdata[train_ind, ]
+test &lt;- steamdata[-train_ind, ]</code></pre>
+<p><a name="lmmodel"></a></p>
+</div>
+<div id="linear-model-for-comparison" class="section level2">
+<h2>Linear Model For Comparison</h2>
+<pre class="r"><code>linearmod &lt;- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage, data = steamdata)
+
+# Get predicted values
+predicted_values &lt;- predict(linearmod, newdata = test)</code></pre>
+<pre><code>## Warning in predict.lm(linearmod, newdata = test): prediction from
+## rank-deficient fit; attr(*, &quot;non-estim&quot;) has doubtful cases</code></pre>
+<pre class="r"><code># Calculate MAE
+mae_value &lt;- mae(test$rating, predicted_values)
+
+sum&lt;-summary(linearmod)
+cat(&quot;R Squared =&quot;,sum$r.squared)</code></pre>
+<pre><code>## R Squared = 0.8907739</code></pre>
+<pre class="r"><code>cat(&quot;MAE =&quot;,mae_value)</code></pre>
+<pre><code>## MAE = 3.211541</code></pre>
+<p><a name="NNmod"></a></p>
+</div>
+<div id="neural-network-model" class="section level2">
+<h2>Neural Network Model</h2>
+<pre class="r"><code># Define R-squared for evaluation
+r_squared &lt;- custom_metric(&quot;r_squared&quot;, function(y_true, y_pred) {
+  SS_res &lt;- k_sum(k_square(y_true - y_pred))
+  SS_tot &lt;- k_sum(k_square(y_true - k_mean(y_true)))
+  return(1 - SS_res / (SS_tot + k_epsilon()))
+})
+
+model = keras_model_sequential() %&gt;%
+  layer_dense(units = 64, activation = &quot;relu&quot;,input_shape=(4)) %&gt;%
+  layer_dense(units = 64, activation = &quot;sigmoid&quot;) %&gt;%
+  layer_dense(units = 32, activation = &quot;sigmoid&quot;) %&gt;%
+  layer_dense(units = 1, activation = &quot;linear&quot;)
+
+model %&gt;% compile(
+  loss = &quot;mse&quot;,
+  optimizer = &quot;adam&quot;, 
+  metrics = c(&quot;mean_absolute_error&quot;, r_squared)
+)
+
+trainx &lt;- as.matrix(subset(train, select = -c(rating)))
+
+model %&gt;%
+  fit(
+    x = trainx,
+    y = train$rating,
+    epochs = 15
+  )</code></pre>
+<pre><code>## Epoch 1/15
+## 861/861 - 3s - loss: 3414.1592 - mean_absolute_error: 56.5343 - r_squared: -1.8960e+01 - 3s/epoch - 3ms/step
+## Epoch 2/15
+## 861/861 - 2s - loss: 1873.6643 - mean_absolute_error: 40.8744 - r_squared: -9.9346e+00 - 2s/epoch - 3ms/step
+## Epoch 3/15
+## 861/861 - 2s - loss: 969.8033 - mean_absolute_error: 28.2547 - r_squared: -4.6202e+00 - 2s/epoch - 2ms/step
+## Epoch 4/15
+## 861/861 - 2s - loss: 462.3325 - mean_absolute_error: 18.1246 - r_squared: -1.6801e+00 - 2s/epoch - 2ms/step
+## Epoch 5/15
+## 861/861 - 2s - loss: 200.1462 - mean_absolute_error: 10.6455 - r_squared: -1.4813e-01 - 2s/epoch - 3ms/step
+## Epoch 6/15
+## 861/861 - 2s - loss: 82.1363 - mean_absolute_error: 5.9424 - r_squared: 0.5308 - 2s/epoch - 2ms/step
+## Epoch 7/15
+## 861/861 - 2s - loss: 33.4412 - mean_absolute_error: 3.2676 - r_squared: 0.8101 - 2s/epoch - 2ms/step
+## Epoch 8/15
+## 861/861 - 2s - loss: 14.0629 - mean_absolute_error: 1.7893 - r_squared: 0.9219 - 2s/epoch - 2ms/step
+## Epoch 9/15
+## 861/861 - 2s - loss: 6.3868 - mean_absolute_error: 1.1376 - r_squared: 0.9650 - 2s/epoch - 2ms/step
+## Epoch 10/15
+## 861/861 - 2s - loss: 2.9813 - mean_absolute_error: 0.7358 - r_squared: 0.9835 - 2s/epoch - 2ms/step
+## Epoch 11/15
+## 861/861 - 2s - loss: 1.5517 - mean_absolute_error: 0.5906 - r_squared: 0.9916 - 2s/epoch - 2ms/step
+## Epoch 12/15
+## 861/861 - 2s - loss: 0.8015 - mean_absolute_error: 0.4348 - r_squared: 0.9957 - 2s/epoch - 2ms/step
+## Epoch 13/15
+## 861/861 - 2s - loss: 0.6063 - mean_absolute_error: 0.4637 - r_squared: 0.9966 - 2s/epoch - 2ms/step
+## Epoch 14/15
+## 861/861 - 2s - loss: 0.4158 - mean_absolute_error: 0.4043 - r_squared: 0.9977 - 2s/epoch - 2ms/step
+## Epoch 15/15
+## 861/861 - 2s - loss: 0.4394 - mean_absolute_error: 0.4153 - r_squared: 0.9976 - 2s/epoch - 3ms/step</code></pre>
+<pre class="r"><code>testx &lt;- as.matrix(subset(test, select = -c(rating)))
+
+# R Squared in the evaluation is not calculated properly
+results &lt;- model %&gt;% evaluate(testx, test$rating)</code></pre>
+<pre><code>## 287/287 - 1s - loss: 0.4212 - mean_absolute_error: 0.4840 - r_squared: -8.3617e-01 - 526ms/epoch - 2ms/step</code></pre>
 </div>
 </div>
 
