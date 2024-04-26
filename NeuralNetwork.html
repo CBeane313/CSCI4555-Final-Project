@@ -558,40 +558,40 @@ model %&gt;%
     epochs = 15
   )</code></pre>
 <pre><code>## Epoch 1/15
-## 861/861 - 3s - loss: 3414.1592 - mean_absolute_error: 56.5343 - r_squared: -1.8960e+01 - 3s/epoch - 3ms/step
+## 861/861 - 4s - loss: 3406.3953 - mean_absolute_error: 56.4677 - r_squared: -1.8848e+01 - 4s/epoch - 4ms/step
 ## Epoch 2/15
-## 861/861 - 2s - loss: 1873.6643 - mean_absolute_error: 40.8744 - r_squared: -9.9346e+00 - 2s/epoch - 3ms/step
+## 861/861 - 3s - loss: 1873.6830 - mean_absolute_error: 40.8655 - r_squared: -9.9763e+00 - 3s/epoch - 3ms/step
 ## Epoch 3/15
-## 861/861 - 2s - loss: 969.8033 - mean_absolute_error: 28.2547 - r_squared: -4.6202e+00 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 970.8500 - mean_absolute_error: 28.2943 - r_squared: -4.6455e+00 - 3s/epoch - 3ms/step
 ## Epoch 4/15
-## 861/861 - 2s - loss: 462.3325 - mean_absolute_error: 18.1246 - r_squared: -1.6801e+00 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 482.7775 - mean_absolute_error: 19.1904 - r_squared: -1.7814e+00 - 3s/epoch - 3ms/step
 ## Epoch 5/15
-## 861/861 - 2s - loss: 200.1462 - mean_absolute_error: 10.6455 - r_squared: -1.4813e-01 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 219.3080 - mean_absolute_error: 11.5409 - r_squared: -2.5413e-01 - 2s/epoch - 3ms/step
 ## Epoch 6/15
-## 861/861 - 2s - loss: 82.1363 - mean_absolute_error: 5.9424 - r_squared: 0.5308 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 85.4739 - mean_absolute_error: 6.1697 - r_squared: 0.5072 - 3s/epoch - 3ms/step
 ## Epoch 7/15
-## 861/861 - 2s - loss: 33.4412 - mean_absolute_error: 3.2676 - r_squared: 0.8101 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 34.1013 - mean_absolute_error: 3.3244 - r_squared: 0.8079 - 3s/epoch - 3ms/step
 ## Epoch 8/15
-## 861/861 - 2s - loss: 14.0629 - mean_absolute_error: 1.7893 - r_squared: 0.9219 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 14.2941 - mean_absolute_error: 1.8665 - r_squared: 0.9210 - 3s/epoch - 4ms/step
 ## Epoch 9/15
-## 861/861 - 2s - loss: 6.3868 - mean_absolute_error: 1.1376 - r_squared: 0.9650 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 6.5824 - mean_absolute_error: 1.2151 - r_squared: 0.9642 - 3s/epoch - 3ms/step
 ## Epoch 10/15
-## 861/861 - 2s - loss: 2.9813 - mean_absolute_error: 0.7358 - r_squared: 0.9835 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 3.1096 - mean_absolute_error: 0.7925 - r_squared: 0.9830 - 3s/epoch - 3ms/step
 ## Epoch 11/15
-## 861/861 - 2s - loss: 1.5517 - mean_absolute_error: 0.5906 - r_squared: 0.9916 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 1.7377 - mean_absolute_error: 0.6426 - r_squared: 0.9904 - 3s/epoch - 4ms/step
 ## Epoch 12/15
-## 861/861 - 2s - loss: 0.8015 - mean_absolute_error: 0.4348 - r_squared: 0.9957 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 0.9317 - mean_absolute_error: 0.5103 - r_squared: 0.9949 - 3s/epoch - 3ms/step
 ## Epoch 13/15
-## 861/861 - 2s - loss: 0.6063 - mean_absolute_error: 0.4637 - r_squared: 0.9966 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 0.6762 - mean_absolute_error: 0.4995 - r_squared: 0.9962 - 3s/epoch - 3ms/step
 ## Epoch 14/15
-## 861/861 - 2s - loss: 0.4158 - mean_absolute_error: 0.4043 - r_squared: 0.9977 - 2s/epoch - 2ms/step
+## 861/861 - 2s - loss: 0.5712 - mean_absolute_error: 0.4929 - r_squared: 0.9968 - 2s/epoch - 3ms/step
 ## Epoch 15/15
-## 861/861 - 2s - loss: 0.4394 - mean_absolute_error: 0.4153 - r_squared: 0.9976 - 2s/epoch - 3ms/step</code></pre>
+## 861/861 - 2s - loss: 0.5571 - mean_absolute_error: 0.4441 - r_squared: 0.9968 - 2s/epoch - 2ms/step</code></pre>
 <pre class="r"><code>testx &lt;- as.matrix(subset(test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx, test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 0.4212 - mean_absolute_error: 0.4840 - r_squared: -8.3617e-01 - 526ms/epoch - 2ms/step</code></pre>
+<pre><code>## 287/287 - 1s - loss: 0.2469 - mean_absolute_error: 0.3176 - r_squared: 0.0280 - 640ms/epoch - 2ms/step</code></pre>
 </div>
 </div>
 

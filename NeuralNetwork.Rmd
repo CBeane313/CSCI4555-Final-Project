@@ -42,9 +42,6 @@ steamdata <- read_csv("steamGameData.csv", na = c("nan"))
 colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
 colnames(steamdata)[which(colnames(steamdata) == "24_hour_peak")] <- "twenty4_hr_peak"
 
-#Drop columns that will not be useful, that are redundant, and to keep the number of features reasonable
-# steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine))
-
 #Drop NA observations 
 steamdata <- na.omit(steamdata)
 
@@ -69,7 +66,8 @@ steamdata$primary_genre <- as.factor(steamdata$primary_genre)
 #Make dates actual dates
 steamdata$release <- as.Date(steamdata$release)
 
-steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine, peak_players))
+steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
+
 #Show head of data
 head(steamdata)%>%kable()
 ```
@@ -95,7 +93,7 @@ test <- steamdata[-train_ind, ]
 ## Linear Model For Comparison
 
 ```{r}
-linearmod <- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage, data = steamdata)
+linearmod <- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage+primary_genre+all_time_peak, data = steamdata)
 
 # Get predicted values
 predicted_values <- predict(linearmod, newdata = test)
@@ -110,20 +108,22 @@ cat("MAE =",mae_value)
 
 <a name="NNmod"></a>
 
-## Neural Network Model
+## Neural Network Model 1
 
 ```{r}
+attempt1train <- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+attempt1test <- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+
 # Define R-squared for evaluation
 r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
   SS_res <- k_sum(k_square(y_true - y_pred))
   SS_tot <- k_sum(k_square(y_true - k_mean(y_true)))
-  return(1 - SS_res / (SS_tot + k_epsilon()))
+  return(1 - SS_res /SS_tot)
 })
 
 model = keras_model_sequential() %>%
-  layer_dense(units = 64, activation = "relu",input_shape=(4)) %>%
+  layer_dense(units = 64, activation = "relu",input_shape=(3)) %>%
   layer_dense(units = 64, activation = "sigmoid") %>%
-  layer_dense(units = 32, activation = "sigmoid") %>%
   layer_dense(units = 1, activation = "linear")
 
 model %>% compile(
@@ -132,19 +132,19 @@ model %>% compile(
   metrics = c("mean_absolute_error", r_squared)
 )
 
-trainx <- as.matrix(subset(train, select = -c(rating)))
+trainx1 <- as.matrix(subset(attempt1train, select = -c(rating)))
 
 model %>%
   fit(
-    x = trainx,
-    y = train$rating,
-    epochs = 15
+    x = trainx1,
+    y = attempt1train$rating,
+    epochs = 17
   )
 
-testx <- as.matrix(subset(test, select = -c(rating)))
+testx1 <- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
-results <- model %>% evaluate(testx, test$rating)
+results <- model %>% evaluate(testx1, attempt1test$rating)
 ```
 
 
