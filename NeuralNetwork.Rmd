@@ -70,9 +70,11 @@ steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_a
 
 #Converts genres and engines to numbers for one hot encoding
 steamdata$primary_genre_number <- factor(steamdata$primary_genre)
-steamdata$primary_genre_number <- as.numeric(steamdata$primary_genre_number) 
+steamdata$primary_genre_number <- factor(as.numeric(steamdata$primary_genre_number)) 
 steamdata$engine_number <- factor(steamdata$engine)
-steamdata$engine_number <- as.numeric(steamdata$engine_number)
+steamdata$engine_number <- factor(as.numeric(steamdata$engine_number))
+#steamdata$engine_number_onehot <- to_categorical(as.numeric(steamdata$engine_number, num_classes =  83))
+#genre_onehot <- to_categorical(as.numeric(steamdata$primary_genre_number, num_classes = 24))
 
 
 #Show head of data
@@ -118,8 +120,8 @@ cat("MAE =",mae_value)
 ## Neural Network Model 1
 
 ```{r}
-attempt1train <- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
-attempt1test <- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+attempt1train <- subset(train, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
+attempt1test <- subset(test, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 
 # Define R-squared for evaluation
 r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
