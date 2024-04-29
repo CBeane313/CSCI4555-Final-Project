@@ -69,10 +69,10 @@ steamdata$release <- as.Date(steamdata$release)
 steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
 
 #Converts genres and engines to numbers for one hot encoding
-steamdata$primary_genre<- factor(steamdata$primary_genre)
-steamdata$primary_genre <- as.numeric(steamdata$primary_genre) 
-steamdata$engine <- factor(steamdata$engine)
-steamdata$engine <- as.numeric(steamdata$engine)
+steamdata$primary_genre_number <- factor(steamdata$primary_genre)
+steamdata$primary_genre_number <- as.numeric(steamdata$primary_genre_number) 
+steamdata$engine_number <- factor(steamdata$engine)
+steamdata$engine_number <- as.numeric(steamdata$engine_number)
 
 
 #Show head of data
