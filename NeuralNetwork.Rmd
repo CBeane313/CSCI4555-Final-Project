@@ -19,7 +19,9 @@ ___
     b. [Data Preproccessing](#dataprepro)
 2. [Data Splitting](#datasplit)
 4. [Linear Model for Comparison](#lmmodel)
-4. [Neural Network Model](#NNmod)
+5. [Neural Network Model Attempt 1](#NNmod)
+6. [Neural Network Model Attempt 2](#NNmod2)
+6. [Neural Network Model Attempt 3](#NNmod3)
     
 ___
 
@@ -70,11 +72,11 @@ steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_a
 
 #Converts genres and engines to numbers for one hot encoding
 steamdata$primary_genre_number <- factor(steamdata$primary_genre)
-steamdata$primary_genre_number <- factor(as.numeric(steamdata$primary_genre_number)) 
+steamdata$primary_genre_number <-as.numeric(steamdata$primary_genre_number)
 steamdata$engine_number <- factor(steamdata$engine)
-steamdata$engine_number <- factor(as.numeric(steamdata$engine_number))
-#steamdata$engine_number_onehot <- to_categorical(as.numeric(steamdata$engine_number, num_classes =  83))
-#genre_onehot <- to_categorical(as.numeric(steamdata$primary_genre_number, num_classes = 24))
+steamdata$engine_number <- as.numeric(steamdata$engine_number)
+steamdata$engine_number <- to_categorical(as.numeric(steamdata$engine_number, num_classes =  83))
+steamdata$primary_genre_number <- to_categorical(as.numeric(steamdata$primary_genre_number, num_classes = 24))
 
 
 #Show head of data
@@ -117,9 +119,11 @@ cat("MAE =",mae_value)
 
 <a name="NNmod"></a>
 
-## Neural Network Model 1
+## Neural Network Model Attempt 1
 
 ```{r}
+set.seed(1234)
+
 attempt1train <- subset(train, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 attempt1test <- subset(test, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 
@@ -132,6 +136,109 @@ r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
 
 model = keras_model_sequential() %>%
   layer_dense(units = 64, activation = "relu",input_shape=(3)) %>%
+  layer_dense(units = 64, activation = "sigmoid") %>%
+  layer_dense(units = 1, activation = "linear")
+
+model %>% compile(
+  loss = "mse",
+  optimizer = "adam", 
+  metrics = c("mean_absolute_error", r_squared)
+)
+
+trainx1 <- as.matrix(subset(attempt1train, select = -c(rating)))
+
+model %>%
+  fit(
+    x = trainx1,
+    y = attempt1train$rating,
+    epochs = 17
+  )
+
+testx1 <- as.matrix(subset(attempt1test, select = -c(rating)))
+
+# R Squared in the evaluation is not calculated properly
+results <- model %>% evaluate(testx1, attempt1test$rating)
+```
+
+
+<a name="NNmod2"></a>
+
+## Neural Network Model Attempt 2
+
+```{r}
+set.seed(1234)
+
+attempt1train <- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+attempt1test <- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+
+# Define R-squared for evaluation
+r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
+  SS_res <- k_sum(k_square(y_true - y_pred))
+  SS_tot <- k_sum(k_square(y_true - k_mean(y_true)))
+  return(1 - SS_res /SS_tot)
+})
+
+model = keras_model_sequential() %>%
+  layer_dense(units = 256, activation = "relu",input_shape=(112)) %>%
+  layer_dense(units = 64, activation = "sigmoid") %>%
+  layer_dense(units = 1, activation = "linear")
+
+model %>% compile(
+  loss = "mse",
+  optimizer = "adam", 
+  metrics = c("mean_absolute_error", r_squared)
+)
+
+trainx1 <- as.matrix(subset(attempt1train, select = -c(rating)))
+
+model %>%
+  fit(
+    x = trainx1,
+    y = attempt1train$rating,
+    epochs = 17
+  )
+
+testx1 <- as.matrix(subset(attempt1test, select = -c(rating)))
+
+# R Squared in the evaluation is not calculated properly
+results <- model %>% evaluate(testx1, attempt1test$rating)
+```
+
+<a name="NNmod3"></a>
+
+## Neural Network Model Attempt 3
+
+```{r}
+set.seed(1234)
+
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+attempt1train <- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+attempt1test <- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+
+normtrain <- keras::normalize(attempt1train[,c(1:4)], order = 2 )
+attempt1train[1]=normtrain[1]
+attempt1train[2]=normtrain[2]
+attempt1train[3]=normtrain[3]
+attempt1train[4]=normtrain[4]
+
+normtest <- keras::normalize(attempt1test[,c(1:4)], order = 2 )
+attempt1test[1]=normtest[1]
+attempt1test[2]=normtest[2]
+attempt1test[3]=normtest[3]
+attempt1test[4]=normtest[4]
+
+# Define R-squared for evaluation
+r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
+  SS_res <- k_sum(k_square(y_true - y_pred))
+  SS_tot <- k_sum(k_square(y_true - k_mean(y_true)))
+  return(1 - SS_res /SS_tot)
+})
+
+model = keras_model_sequential() %>%
+  layer_dense(units = 128, activation = "relu",input_shape=(112)) %>%
   layer_dense(units = 64, activation = "sigmoid") %>%
   layer_dense(units = 1, activation = "linear")
 

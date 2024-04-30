@@ -365,7 +365,8 @@ display: none;
 </ol></li>
 <li><a href="#datasplit">Data Splitting</a></li>
 <li><a href="#lmmodel">Linear Model for Comparison</a></li>
-<li><a href="#NNmod">Neural Network Model</a></li>
+<li><a href="#NNmod">Neural Network Model Attempt 1</a></li>
+<li><a href="#NNmod2">Neural Network Model Attempt 2</a></li>
 </ol>
 <hr />
 <p><a name="dataprep"></a></p>
@@ -402,9 +403,6 @@ display: none;
 colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;
 colnames(steamdata)[which(colnames(steamdata) == &quot;24_hour_peak&quot;)] &lt;- &quot;twenty4_hr_peak&quot;
 
-#Drop columns that will not be useful, that are redundant, and to keep the number of features reasonable
-# steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine))
-
 #Drop NA observations 
 steamdata &lt;- na.omit(steamdata)
 
@@ -429,16 +427,34 @@ steamdata$primary_genre &lt;- as.factor(steamdata$primary_genre)
 #Make dates actual dates
 steamdata$release &lt;- as.Date(steamdata$release)
 
-steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak, all_time_peak_date, publisher, release, primary_genre, developer, engine, peak_players))
+steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
+
+#Converts genres and engines to numbers for one hot encoding
+steamdata$primary_genre_number &lt;- factor(steamdata$primary_genre)
+steamdata$primary_genre_number &lt;-as.numeric(steamdata$primary_genre_number)
+steamdata$engine_number &lt;- factor(steamdata$engine)
+steamdata$engine_number &lt;- as.numeric(steamdata$engine_number)
+steamdata$engine_number &lt;- to_categorical(as.numeric(steamdata$engine_number, num_classes =  83))
+steamdata$primary_genre_number &lt;- to_categorical(as.numeric(steamdata$primary_genre_number, num_classes = 24))
+
+
 #Show head of data
 head(steamdata)%&gt;%kable()</code></pre>
-<table style="width:100%;">
+<pre><code>## Warning in `[&lt;-.data.frame`(`*tmp*`, , isn, value =
+## structure(list(positive_reviews = structure(c(&quot;19807&quot;, : provided 115 variables
+## to replace 8 variables</code></pre>
+<table>
 <colgroup>
-<col width="23%" />
-<col width="23%" />
-<col width="19%" />
+<col width="11%" />
+<col width="11%" />
 <col width="9%" />
-<col width="24%" />
+<col width="4%" />
+<col width="9%" />
+<col width="12%" />
+<col width="9%" />
+<col width="6%" />
+<col width="14%" />
+<col width="9%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -446,7 +462,12 @@ head(steamdata)%&gt;%kable()</code></pre>
 <th align="right">negative_reviews</th>
 <th align="right">total_reviews</th>
 <th align="right">rating</th>
+<th align="left">primary_genre</th>
 <th align="right">review_percentage</th>
+<th align="right">all_time_peak</th>
+<th align="left">engine</th>
+<th align="right">primary_genre_number</th>
+<th align="right">engine_number</th>
 </tr>
 </thead>
 <tbody>
@@ -455,42 +476,72 @@ head(steamdata)%&gt;%kable()</code></pre>
 <td align="right">227</td>
 <td align="right">20034</td>
 <td align="right">96.39</td>
+<td align="left">Action</td>
 <td align="right">98</td>
+<td align="right">4529</td>
+<td align="left">GameMaker</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 <tr class="even">
 <td align="right">61752</td>
 <td align="right">1616</td>
 <td align="right">63368</td>
 <td align="right">95.75</td>
+<td align="left">Action</td>
 <td align="right">97</td>
+<td align="right">168191</td>
+<td align="left">RE_Engine</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 <tr class="odd">
 <td align="right">12643</td>
 <td align="right">213</td>
 <td align="right">12856</td>
 <td align="right">95.54</td>
+<td align="left">Casual</td>
 <td align="right">98</td>
+<td align="right">15543</td>
+<td align="left">Unity</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 <tr class="even">
 <td align="right">11717</td>
 <td align="right">209</td>
 <td align="right">11926</td>
 <td align="right">95.39</td>
+<td align="left">Indie</td>
 <td align="right">98</td>
+<td align="right">1415</td>
+<td align="left">Unity</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 <tr class="odd">
 <td align="right">14152</td>
 <td align="right">324</td>
 <td align="right">14476</td>
 <td align="right">95.09</td>
+<td align="left">Action</td>
 <td align="right">97</td>
+<td align="right">6132</td>
+<td align="left">Unreal</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 <tr class="even">
 <td align="right">8891</td>
 <td align="right">165</td>
 <td align="right">9056</td>
 <td align="right">95.08</td>
+<td align="left">RPG</td>
 <td align="right">98</td>
+<td align="right">8672</td>
+<td align="left">Unity</td>
+<td align="right">0</td>
+<td align="right">0</td>
 </tr>
 </tbody>
 </table>
@@ -512,7 +563,7 @@ test &lt;- steamdata[-train_ind, ]</code></pre>
 </div>
 <div id="linear-model-for-comparison" class="section level2">
 <h2>Linear Model For Comparison</h2>
-<pre class="r"><code>linearmod &lt;- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage, data = steamdata)
+<pre class="r"><code>linearmod &lt;- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage+primary_genre+all_time_peak, data = steamdata)
 
 # Get predicted values
 predicted_values &lt;- predict(linearmod, newdata = test)</code></pre>
@@ -523,24 +574,28 @@ mae_value &lt;- mae(test$rating, predicted_values)
 
 sum&lt;-summary(linearmod)
 cat(&quot;R Squared =&quot;,sum$r.squared)</code></pre>
-<pre><code>## R Squared = 0.8907739</code></pre>
+<pre><code>## R Squared = 0.8920872</code></pre>
 <pre class="r"><code>cat(&quot;MAE =&quot;,mae_value)</code></pre>
-<pre><code>## MAE = 3.211541</code></pre>
+<pre><code>## MAE = 3.188779</code></pre>
 <p><a name="NNmod"></a></p>
 </div>
-<div id="neural-network-model" class="section level2">
-<h2>Neural Network Model</h2>
-<pre class="r"><code># Define R-squared for evaluation
+<div id="neural-network-model-attempt-1" class="section level2">
+<h2>Neural Network Model Attempt 1</h2>
+<pre class="r"><code>set.seed(1234)
+
+attempt1train &lt;- subset(train, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
+attempt1test &lt;- subset(test, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
+
+# Define R-squared for evaluation
 r_squared &lt;- custom_metric(&quot;r_squared&quot;, function(y_true, y_pred) {
   SS_res &lt;- k_sum(k_square(y_true - y_pred))
   SS_tot &lt;- k_sum(k_square(y_true - k_mean(y_true)))
-  return(1 - SS_res / (SS_tot + k_epsilon()))
+  return(1 - SS_res /SS_tot)
 })
 
 model = keras_model_sequential() %&gt;%
-  layer_dense(units = 64, activation = &quot;relu&quot;,input_shape=(4)) %&gt;%
+  layer_dense(units = 64, activation = &quot;relu&quot;,input_shape=(3)) %&gt;%
   layer_dense(units = 64, activation = &quot;sigmoid&quot;) %&gt;%
-  layer_dense(units = 32, activation = &quot;sigmoid&quot;) %&gt;%
   layer_dense(units = 1, activation = &quot;linear&quot;)
 
 model %&gt;% compile(
@@ -549,49 +604,217 @@ model %&gt;% compile(
   metrics = c(&quot;mean_absolute_error&quot;, r_squared)
 )
 
-trainx &lt;- as.matrix(subset(train, select = -c(rating)))
+trainx1 &lt;- as.matrix(subset(attempt1train, select = -c(rating)))
 
 model %&gt;%
   fit(
-    x = trainx,
-    y = train$rating,
-    epochs = 15
+    x = trainx1,
+    y = attempt1train$rating,
+    epochs = 17
   )</code></pre>
-<pre><code>## Epoch 1/15
-## 861/861 - 4s - loss: 3406.3953 - mean_absolute_error: 56.4677 - r_squared: -1.8848e+01 - 4s/epoch - 4ms/step
-## Epoch 2/15
-## 861/861 - 3s - loss: 1873.6830 - mean_absolute_error: 40.8655 - r_squared: -9.9763e+00 - 3s/epoch - 3ms/step
-## Epoch 3/15
-## 861/861 - 3s - loss: 970.8500 - mean_absolute_error: 28.2943 - r_squared: -4.6455e+00 - 3s/epoch - 3ms/step
-## Epoch 4/15
-## 861/861 - 3s - loss: 482.7775 - mean_absolute_error: 19.1904 - r_squared: -1.7814e+00 - 3s/epoch - 3ms/step
-## Epoch 5/15
-## 861/861 - 2s - loss: 219.3080 - mean_absolute_error: 11.5409 - r_squared: -2.5413e-01 - 2s/epoch - 3ms/step
-## Epoch 6/15
-## 861/861 - 3s - loss: 85.4739 - mean_absolute_error: 6.1697 - r_squared: 0.5072 - 3s/epoch - 3ms/step
-## Epoch 7/15
-## 861/861 - 3s - loss: 34.1013 - mean_absolute_error: 3.3244 - r_squared: 0.8079 - 3s/epoch - 3ms/step
-## Epoch 8/15
-## 861/861 - 3s - loss: 14.2941 - mean_absolute_error: 1.8665 - r_squared: 0.9210 - 3s/epoch - 4ms/step
-## Epoch 9/15
-## 861/861 - 3s - loss: 6.5824 - mean_absolute_error: 1.2151 - r_squared: 0.9642 - 3s/epoch - 3ms/step
-## Epoch 10/15
-## 861/861 - 3s - loss: 3.1096 - mean_absolute_error: 0.7925 - r_squared: 0.9830 - 3s/epoch - 3ms/step
-## Epoch 11/15
-## 861/861 - 3s - loss: 1.7377 - mean_absolute_error: 0.6426 - r_squared: 0.9904 - 3s/epoch - 4ms/step
-## Epoch 12/15
-## 861/861 - 3s - loss: 0.9317 - mean_absolute_error: 0.5103 - r_squared: 0.9949 - 3s/epoch - 3ms/step
-## Epoch 13/15
-## 861/861 - 3s - loss: 0.6762 - mean_absolute_error: 0.4995 - r_squared: 0.9962 - 3s/epoch - 3ms/step
-## Epoch 14/15
-## 861/861 - 2s - loss: 0.5712 - mean_absolute_error: 0.4929 - r_squared: 0.9968 - 2s/epoch - 3ms/step
-## Epoch 15/15
-## 861/861 - 2s - loss: 0.5571 - mean_absolute_error: 0.4441 - r_squared: 0.9968 - 2s/epoch - 2ms/step</code></pre>
-<pre class="r"><code>testx &lt;- as.matrix(subset(test, select = -c(rating)))
+<pre><code>## Epoch 1/17
+## 861/861 - 5s - loss: 2541.7012 - mean_absolute_error: 47.6604 - r_squared: -1.3774e+01 - 5s/epoch - 6ms/step
+## Epoch 2/17
+## 861/861 - 3s - loss: 724.9630 - mean_absolute_error: 23.3596 - r_squared: -3.2184e+00 - 3s/epoch - 4ms/step
+## Epoch 3/17
+## 861/861 - 4s - loss: 181.4124 - mean_absolute_error: 9.9487 - r_squared: -5.6469e-02 - 4s/epoch - 4ms/step
+## Epoch 4/17
+## 861/861 - 4s - loss: 46.9868 - mean_absolute_error: 4.1377 - r_squared: 0.7358 - 4s/epoch - 5ms/step
+## Epoch 5/17
+## 861/861 - 3s - loss: 14.6476 - mean_absolute_error: 1.9342 - r_squared: 0.9187 - 3s/epoch - 3ms/step
+## Epoch 6/17
+## 861/861 - 4s - loss: 5.6690 - mean_absolute_error: 1.1435 - r_squared: 0.9688 - 4s/epoch - 4ms/step
+## Epoch 7/17
+## 861/861 - 3s - loss: 2.6772 - mean_absolute_error: 0.8455 - r_squared: 0.9851 - 3s/epoch - 4ms/step
+## Epoch 8/17
+## 861/861 - 3s - loss: 1.7182 - mean_absolute_error: 0.7145 - r_squared: 0.9906 - 3s/epoch - 4ms/step
+## Epoch 9/17
+## 861/861 - 2s - loss: 1.1225 - mean_absolute_error: 0.5825 - r_squared: 0.9939 - 2s/epoch - 3ms/step
+## Epoch 10/17
+## 861/861 - 2s - loss: 0.7759 - mean_absolute_error: 0.5543 - r_squared: 0.9957 - 2s/epoch - 3ms/step
+## Epoch 11/17
+## 861/861 - 4s - loss: 0.4802 - mean_absolute_error: 0.4575 - r_squared: 0.9973 - 4s/epoch - 4ms/step
+## Epoch 12/17
+## 861/861 - 3s - loss: 0.4176 - mean_absolute_error: 0.4192 - r_squared: 0.9977 - 3s/epoch - 4ms/step
+## Epoch 13/17
+## 861/861 - 5s - loss: 0.6902 - mean_absolute_error: 0.5281 - r_squared: 0.9961 - 5s/epoch - 5ms/step
+## Epoch 14/17
+## 861/861 - 2s - loss: 0.5038 - mean_absolute_error: 0.4610 - r_squared: 0.9972 - 2s/epoch - 2ms/step
+## Epoch 15/17
+## 861/861 - 2s - loss: 0.4404 - mean_absolute_error: 0.4330 - r_squared: 0.9975 - 2s/epoch - 3ms/step
+## Epoch 16/17
+## 861/861 - 2s - loss: 0.5475 - mean_absolute_error: 0.4979 - r_squared: 0.9968 - 2s/epoch - 2ms/step
+## Epoch 17/17
+## 861/861 - 2s - loss: 0.8340 - mean_absolute_error: 0.5375 - r_squared: 0.9951 - 2s/epoch - 2ms/step</code></pre>
+<pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
-results &lt;- model %&gt;% evaluate(testx, test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 0.2469 - mean_absolute_error: 0.3176 - r_squared: 0.0280 - 640ms/epoch - 2ms/step</code></pre>
+results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
+<pre><code>## 287/287 - 1s - loss: 0.3674 - mean_absolute_error: 0.3519 - r_squared: -1.3287e+00 - 584ms/epoch - 2ms/step</code></pre>
+<p><a name="NNmod2"></a></p>
+</div>
+<div id="neural-network-model-attempt-2" class="section level2">
+<h2>Neural Network Model Attempt 2</h2>
+<pre class="r"><code>set.seed(1234)
+
+attempt1train &lt;- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+attempt1test &lt;- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+
+# Define R-squared for evaluation
+r_squared &lt;- custom_metric(&quot;r_squared&quot;, function(y_true, y_pred) {
+  SS_res &lt;- k_sum(k_square(y_true - y_pred))
+  SS_tot &lt;- k_sum(k_square(y_true - k_mean(y_true)))
+  return(1 - SS_res /SS_tot)
+})
+
+model = keras_model_sequential() %&gt;%
+  layer_dense(units = 256, activation = &quot;relu&quot;,input_shape=(112)) %&gt;%
+  layer_dense(units = 64, activation = &quot;sigmoid&quot;) %&gt;%
+  layer_dense(units = 1, activation = &quot;linear&quot;)
+
+model %&gt;% compile(
+  loss = &quot;mse&quot;,
+  optimizer = &quot;adam&quot;, 
+  metrics = c(&quot;mean_absolute_error&quot;, r_squared)
+)
+
+trainx1 &lt;- as.matrix(subset(attempt1train, select = -c(rating)))
+
+model %&gt;%
+  fit(
+    x = trainx1,
+    y = attempt1train$rating,
+    epochs = 17
+  )</code></pre>
+<pre><code>## Epoch 1/17
+## 861/861 - 5s - loss: 2614.2554 - mean_absolute_error: 48.5761 - r_squared: -1.4206e+01 - 5s/epoch - 5ms/step
+## Epoch 2/17
+## 861/861 - 2s - loss: 815.9184 - mean_absolute_error: 25.0919 - r_squared: -3.7638e+00 - 2s/epoch - 2ms/step
+## Epoch 3/17
+## 861/861 - 2s - loss: 220.8131 - mean_absolute_error: 11.3481 - r_squared: -2.7761e-01 - 2s/epoch - 2ms/step
+## Epoch 4/17
+## 861/861 - 2s - loss: 59.3294 - mean_absolute_error: 4.8389 - r_squared: 0.6603 - 2s/epoch - 2ms/step
+## Epoch 5/17
+## 861/861 - 2s - loss: 18.5683 - mean_absolute_error: 2.2869 - r_squared: 0.8965 - 2s/epoch - 3ms/step
+## Epoch 6/17
+## 861/861 - 2s - loss: 7.0499 - mean_absolute_error: 1.2951 - r_squared: 0.9610 - 2s/epoch - 3ms/step
+## Epoch 7/17
+## 861/861 - 2s - loss: 3.2594 - mean_absolute_error: 0.9088 - r_squared: 0.9822 - 2s/epoch - 3ms/step
+## Epoch 8/17
+## 861/861 - 2s - loss: 1.5222 - mean_absolute_error: 0.6260 - r_squared: 0.9916 - 2s/epoch - 3ms/step
+## Epoch 9/17
+## 861/861 - 2s - loss: 1.8780 - mean_absolute_error: 0.7257 - r_squared: 0.9897 - 2s/epoch - 2ms/step
+## Epoch 10/17
+## 861/861 - 2s - loss: 0.9960 - mean_absolute_error: 0.5469 - r_squared: 0.9944 - 2s/epoch - 3ms/step
+## Epoch 11/17
+## 861/861 - 2s - loss: 0.6536 - mean_absolute_error: 0.5200 - r_squared: 0.9964 - 2s/epoch - 2ms/step
+## Epoch 12/17
+## 861/861 - 3s - loss: 0.8331 - mean_absolute_error: 0.5530 - r_squared: 0.9953 - 3s/epoch - 3ms/step
+## Epoch 13/17
+## 861/861 - 2s - loss: 0.4606 - mean_absolute_error: 0.4409 - r_squared: 0.9974 - 2s/epoch - 3ms/step
+## Epoch 14/17
+## 861/861 - 2s - loss: 0.4916 - mean_absolute_error: 0.4707 - r_squared: 0.9972 - 2s/epoch - 3ms/step
+## Epoch 15/17
+## 861/861 - 3s - loss: 0.4936 - mean_absolute_error: 0.4635 - r_squared: 0.9972 - 3s/epoch - 3ms/step
+## Epoch 16/17
+## 861/861 - 2s - loss: 0.5649 - mean_absolute_error: 0.5014 - r_squared: 0.9968 - 2s/epoch - 2ms/step
+## Epoch 17/17
+## 861/861 - 2s - loss: 0.7898 - mean_absolute_error: 0.5578 - r_squared: 0.9955 - 2s/epoch - 2ms/step</code></pre>
+<pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
+
+# R Squared in the evaluation is not calculated properly
+results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
+<pre><code>## 287/287 - 0s - loss: 0.4457 - mean_absolute_error: 0.4421 - r_squared: -1.1206e+00 - 464ms/epoch - 2ms/step</code></pre>
+<p><a name="NNmod3"></a></p>
+</div>
+<div id="neural-network-model-attempt-3" class="section level2">
+<h2>Neural Network Model Attempt 3</h2>
+<pre class="r"><code>set.seed(1234)
+
+normalize &lt;- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+attempt1train &lt;- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+attempt1test &lt;- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
+
+normtrain &lt;- keras::normalize(attempt1train[,c(1:4)], order = 2 )
+attempt1train[1]=normtrain[1]
+attempt1train[2]=normtrain[2]
+attempt1train[3]=normtrain[3]
+attempt1train[4]=normtrain[4]
+
+normtest &lt;- keras::normalize(attempt1test[,c(1:4)], order = 2 )
+attempt1test[1]=normtest[1]
+attempt1test[2]=normtest[2]
+attempt1test[3]=normtest[3]
+attempt1test[4]=normtest[4]
+
+# Define R-squared for evaluation
+r_squared &lt;- custom_metric(&quot;r_squared&quot;, function(y_true, y_pred) {
+  SS_res &lt;- k_sum(k_square(y_true - y_pred))
+  SS_tot &lt;- k_sum(k_square(y_true - k_mean(y_true)))
+  return(1 - SS_res /SS_tot)
+})
+
+model = keras_model_sequential() %&gt;%
+  layer_dense(units = 128, activation = &quot;relu&quot;,input_shape=(112)) %&gt;%
+  layer_dense(units = 64, activation = &quot;sigmoid&quot;) %&gt;%
+  layer_dense(units = 1, activation = &quot;linear&quot;)
+
+model %&gt;% compile(
+  loss = &quot;mse&quot;,
+  optimizer = &quot;adam&quot;, 
+  metrics = c(&quot;mean_absolute_error&quot;, r_squared)
+)
+
+trainx1 &lt;- as.matrix(subset(attempt1train, select = -c(rating)))
+
+model %&gt;%
+  fit(
+    x = trainx1,
+    y = attempt1train$rating,
+    epochs = 17
+  )</code></pre>
+<pre><code>## Epoch 1/17
+## 861/861 - 4s - loss: 0.0321 - mean_absolute_error: 0.0748 - r_squared: 0.3433 - 4s/epoch - 5ms/step
+## Epoch 2/17
+## 861/861 - 2s - loss: 0.0018 - mean_absolute_error: 0.0261 - r_squared: 0.9650 - 2s/epoch - 3ms/step
+## Epoch 3/17
+## 861/861 - 3s - loss: 8.1194e-04 - mean_absolute_error: 0.0173 - r_squared: 0.9844 - 3s/epoch - 3ms/step
+## Epoch 4/17
+## 861/861 - 3s - loss: 5.0467e-04 - mean_absolute_error: 0.0136 - r_squared: 0.9904 - 3s/epoch - 4ms/step
+## Epoch 5/17
+## 861/861 - 3s - loss: 4.1995e-04 - mean_absolute_error: 0.0128 - r_squared: 0.9919 - 3s/epoch - 3ms/step
+## Epoch 6/17
+## 861/861 - 2s - loss: 3.6516e-04 - mean_absolute_error: 0.0120 - r_squared: 0.9927 - 2s/epoch - 2ms/step
+## Epoch 7/17
+## 861/861 - 1s - loss: 3.1721e-04 - mean_absolute_error: 0.0112 - r_squared: 0.9939 - 1s/epoch - 2ms/step
+## Epoch 8/17
+## 861/861 - 2s - loss: 2.9209e-04 - mean_absolute_error: 0.0110 - r_squared: 0.9943 - 2s/epoch - 2ms/step
+## Epoch 9/17
+## 861/861 - 2s - loss: 2.6508e-04 - mean_absolute_error: 0.0104 - r_squared: 0.9949 - 2s/epoch - 3ms/step
+## Epoch 10/17
+## 861/861 - 3s - loss: 2.4075e-04 - mean_absolute_error: 0.0101 - r_squared: 0.9954 - 3s/epoch - 3ms/step
+## Epoch 11/17
+## 861/861 - 4s - loss: 2.1623e-04 - mean_absolute_error: 0.0095 - r_squared: 0.9957 - 4s/epoch - 4ms/step
+## Epoch 12/17
+## 861/861 - 4s - loss: 2.0352e-04 - mean_absolute_error: 0.0091 - r_squared: 0.9961 - 4s/epoch - 4ms/step
+## Epoch 13/17
+## 861/861 - 3s - loss: 1.9003e-04 - mean_absolute_error: 0.0089 - r_squared: 0.9963 - 3s/epoch - 4ms/step
+## Epoch 14/17
+## 861/861 - 3s - loss: 1.7316e-04 - mean_absolute_error: 0.0084 - r_squared: 0.9967 - 3s/epoch - 4ms/step
+## Epoch 15/17
+## 861/861 - 4s - loss: 1.6935e-04 - mean_absolute_error: 0.0083 - r_squared: 0.9967 - 4s/epoch - 5ms/step
+## Epoch 16/17
+## 861/861 - 3s - loss: 1.6156e-04 - mean_absolute_error: 0.0082 - r_squared: 0.9969 - 3s/epoch - 4ms/step
+## Epoch 17/17
+## 861/861 - 4s - loss: 1.5036e-04 - mean_absolute_error: 0.0078 - r_squared: 0.9971 - 4s/epoch - 4ms/step</code></pre>
+<pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
+
+# R Squared in the evaluation is not calculated properly
+results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
+<pre><code>## 287/287 - 1s - loss: 1.5382e-04 - mean_absolute_error: 0.0066 - r_squared: 0.9940 - 1s/epoch - 4ms/step</code></pre>
 </div>
 </div>
 
