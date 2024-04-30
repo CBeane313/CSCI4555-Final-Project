@@ -238,7 +238,7 @@ r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
 })
 
 model = keras_model_sequential() %>%
-  layer_dense(units = 128, activation = "relu",input_shape=(112)) %>%
+  layer_dense(units = 256, activation = "relu",input_shape=(112)) %>%
   layer_dense(units = 64, activation = "sigmoid") %>%
   layer_dense(units = 1, activation = "linear")
 
