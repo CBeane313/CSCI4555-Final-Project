@@ -367,6 +367,7 @@ display: none;
 <li><a href="#lmmodel">Linear Model for Comparison</a></li>
 <li><a href="#NNmod">Neural Network Model Attempt 1</a></li>
 <li><a href="#NNmod2">Neural Network Model Attempt 2</a></li>
+<li><a href="#NNmod3">Neural Network Model Attempt 3</a></li>
 </ol>
 <hr />
 <p><a name="dataprep"></a></p>
@@ -613,44 +614,44 @@ model %&gt;%
     epochs = 17
   )</code></pre>
 <pre><code>## Epoch 1/17
-## 861/861 - 5s - loss: 2541.7012 - mean_absolute_error: 47.6604 - r_squared: -1.3774e+01 - 5s/epoch - 6ms/step
+## 861/861 - 5s - loss: 2615.1562 - mean_absolute_error: 48.5039 - r_squared: -1.4375e+01 - 5s/epoch - 6ms/step
 ## Epoch 2/17
-## 861/861 - 3s - loss: 724.9630 - mean_absolute_error: 23.3596 - r_squared: -3.2184e+00 - 3s/epoch - 4ms/step
+## 861/861 - 4s - loss: 794.0151 - mean_absolute_error: 24.6956 - r_squared: -3.6213e+00 - 4s/epoch - 5ms/step
 ## Epoch 3/17
-## 861/861 - 4s - loss: 181.4124 - mean_absolute_error: 9.9487 - r_squared: -5.6469e-02 - 4s/epoch - 4ms/step
+## 861/861 - 4s - loss: 211.5654 - mean_absolute_error: 10.9747 - r_squared: -2.1051e-01 - 4s/epoch - 4ms/step
 ## Epoch 4/17
-## 861/861 - 4s - loss: 46.9868 - mean_absolute_error: 4.1377 - r_squared: 0.7358 - 4s/epoch - 5ms/step
+## 861/861 - 4s - loss: 56.5491 - mean_absolute_error: 4.6720 - r_squared: 0.6789 - 4s/epoch - 5ms/step
 ## Epoch 5/17
-## 861/861 - 3s - loss: 14.6476 - mean_absolute_error: 1.9342 - r_squared: 0.9187 - 3s/epoch - 3ms/step
+## 861/861 - 4s - loss: 17.6034 - mean_absolute_error: 2.1806 - r_squared: 0.9015 - 4s/epoch - 4ms/step
 ## Epoch 6/17
-## 861/861 - 4s - loss: 5.6690 - mean_absolute_error: 1.1435 - r_squared: 0.9688 - 4s/epoch - 4ms/step
+## 861/861 - 3s - loss: 6.6900 - mean_absolute_error: 1.2228 - r_squared: 0.9628 - 3s/epoch - 4ms/step
 ## Epoch 7/17
-## 861/861 - 3s - loss: 2.6772 - mean_absolute_error: 0.8455 - r_squared: 0.9851 - 3s/epoch - 4ms/step
+## 861/861 - 4s - loss: 2.9506 - mean_absolute_error: 0.8303 - r_squared: 0.9838 - 4s/epoch - 4ms/step
 ## Epoch 8/17
-## 861/861 - 3s - loss: 1.7182 - mean_absolute_error: 0.7145 - r_squared: 0.9906 - 3s/epoch - 4ms/step
+## 861/861 - 4s - loss: 1.5062 - mean_absolute_error: 0.6819 - r_squared: 0.9919 - 4s/epoch - 4ms/step
 ## Epoch 9/17
-## 861/861 - 2s - loss: 1.1225 - mean_absolute_error: 0.5825 - r_squared: 0.9939 - 2s/epoch - 3ms/step
+## 861/861 - 4s - loss: 0.8779 - mean_absolute_error: 0.5496 - r_squared: 0.9952 - 4s/epoch - 4ms/step
 ## Epoch 10/17
-## 861/861 - 2s - loss: 0.7759 - mean_absolute_error: 0.5543 - r_squared: 0.9957 - 2s/epoch - 3ms/step
+## 861/861 - 4s - loss: 0.6415 - mean_absolute_error: 0.5226 - r_squared: 0.9964 - 4s/epoch - 5ms/step
 ## Epoch 11/17
-## 861/861 - 4s - loss: 0.4802 - mean_absolute_error: 0.4575 - r_squared: 0.9973 - 4s/epoch - 4ms/step
+## 861/861 - 4s - loss: 0.9222 - mean_absolute_error: 0.6302 - r_squared: 0.9948 - 4s/epoch - 5ms/step
 ## Epoch 12/17
-## 861/861 - 3s - loss: 0.4176 - mean_absolute_error: 0.4192 - r_squared: 0.9977 - 3s/epoch - 4ms/step
+## 861/861 - 3s - loss: 0.4901 - mean_absolute_error: 0.4664 - r_squared: 0.9973 - 3s/epoch - 4ms/step
 ## Epoch 13/17
-## 861/861 - 5s - loss: 0.6902 - mean_absolute_error: 0.5281 - r_squared: 0.9961 - 5s/epoch - 5ms/step
+## 861/861 - 3s - loss: 0.5088 - mean_absolute_error: 0.4857 - r_squared: 0.9971 - 3s/epoch - 4ms/step
 ## Epoch 14/17
-## 861/861 - 2s - loss: 0.5038 - mean_absolute_error: 0.4610 - r_squared: 0.9972 - 2s/epoch - 2ms/step
+## 861/861 - 4s - loss: 0.5226 - mean_absolute_error: 0.4749 - r_squared: 0.9970 - 4s/epoch - 4ms/step
 ## Epoch 15/17
-## 861/861 - 2s - loss: 0.4404 - mean_absolute_error: 0.4330 - r_squared: 0.9975 - 2s/epoch - 3ms/step
+## 861/861 - 3s - loss: 0.6209 - mean_absolute_error: 0.5097 - r_squared: 0.9965 - 3s/epoch - 4ms/step
 ## Epoch 16/17
-## 861/861 - 2s - loss: 0.5475 - mean_absolute_error: 0.4979 - r_squared: 0.9968 - 2s/epoch - 2ms/step
+## 861/861 - 4s - loss: 0.5745 - mean_absolute_error: 0.4873 - r_squared: 0.9968 - 4s/epoch - 5ms/step
 ## Epoch 17/17
-## 861/861 - 2s - loss: 0.8340 - mean_absolute_error: 0.5375 - r_squared: 0.9951 - 2s/epoch - 2ms/step</code></pre>
+## 861/861 - 4s - loss: 0.5469 - mean_absolute_error: 0.4818 - r_squared: 0.9969 - 4s/epoch - 4ms/step</code></pre>
 <pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 0.3674 - mean_absolute_error: 0.3519 - r_squared: -1.3287e+00 - 584ms/epoch - 2ms/step</code></pre>
+<pre><code>## 287/287 - 1s - loss: 0.2781 - mean_absolute_error: 0.3292 - r_squared: -8.7673e-02 - 1s/epoch - 4ms/step</code></pre>
 <p><a name="NNmod2"></a></p>
 </div>
 <div id="neural-network-model-attempt-2" class="section level2">
@@ -687,44 +688,44 @@ model %&gt;%
     epochs = 17
   )</code></pre>
 <pre><code>## Epoch 1/17
-## 861/861 - 5s - loss: 2614.2554 - mean_absolute_error: 48.5761 - r_squared: -1.4206e+01 - 5s/epoch - 5ms/step
+## 861/861 - 5s - loss: 2656.6926 - mean_absolute_error: 49.0390 - r_squared: -1.4562e+01 - 5s/epoch - 6ms/step
 ## Epoch 2/17
-## 861/861 - 2s - loss: 815.9184 - mean_absolute_error: 25.0919 - r_squared: -3.7638e+00 - 2s/epoch - 2ms/step
+## 861/861 - 4s - loss: 885.8022 - mean_absolute_error: 26.3910 - r_squared: -4.1505e+00 - 4s/epoch - 5ms/step
 ## Epoch 3/17
-## 861/861 - 2s - loss: 220.8131 - mean_absolute_error: 11.3481 - r_squared: -2.7761e-01 - 2s/epoch - 2ms/step
+## 861/861 - 4s - loss: 255.9815 - mean_absolute_error: 12.4241 - r_squared: -4.6563e-01 - 4s/epoch - 4ms/step
 ## Epoch 4/17
-## 861/861 - 2s - loss: 59.3294 - mean_absolute_error: 4.8389 - r_squared: 0.6603 - 2s/epoch - 2ms/step
+## 861/861 - 4s - loss: 71.9354 - mean_absolute_error: 5.5505 - r_squared: 0.5902 - 4s/epoch - 5ms/step
 ## Epoch 5/17
-## 861/861 - 2s - loss: 18.5683 - mean_absolute_error: 2.2869 - r_squared: 0.8965 - 2s/epoch - 3ms/step
+## 861/861 - 3s - loss: 22.3722 - mean_absolute_error: 2.5652 - r_squared: 0.8748 - 3s/epoch - 4ms/step
 ## Epoch 6/17
-## 861/861 - 2s - loss: 7.0499 - mean_absolute_error: 1.2951 - r_squared: 0.9610 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 8.5341 - mean_absolute_error: 1.4927 - r_squared: 0.9522 - 2s/epoch - 3ms/step
 ## Epoch 7/17
-## 861/861 - 2s - loss: 3.2594 - mean_absolute_error: 0.9088 - r_squared: 0.9822 - 2s/epoch - 3ms/step
+## 861/861 - 3s - loss: 3.7755 - mean_absolute_error: 0.9660 - r_squared: 0.9795 - 3s/epoch - 3ms/step
 ## Epoch 8/17
-## 861/861 - 2s - loss: 1.5222 - mean_absolute_error: 0.6260 - r_squared: 0.9916 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 1.9659 - mean_absolute_error: 0.7562 - r_squared: 0.9893 - 2s/epoch - 2ms/step
 ## Epoch 9/17
-## 861/861 - 2s - loss: 1.8780 - mean_absolute_error: 0.7257 - r_squared: 0.9897 - 2s/epoch - 2ms/step
+## 861/861 - 2s - loss: 1.1165 - mean_absolute_error: 0.6009 - r_squared: 0.9939 - 2s/epoch - 3ms/step
 ## Epoch 10/17
-## 861/861 - 2s - loss: 0.9960 - mean_absolute_error: 0.5469 - r_squared: 0.9944 - 2s/epoch - 3ms/step
+## 861/861 - 3s - loss: 1.1247 - mean_absolute_error: 0.6525 - r_squared: 0.9937 - 3s/epoch - 3ms/step
 ## Epoch 11/17
-## 861/861 - 2s - loss: 0.6536 - mean_absolute_error: 0.5200 - r_squared: 0.9964 - 2s/epoch - 2ms/step
+## 861/861 - 3s - loss: 2.1900 - mean_absolute_error: 0.8785 - r_squared: 0.9877 - 3s/epoch - 4ms/step
 ## Epoch 12/17
-## 861/861 - 3s - loss: 0.8331 - mean_absolute_error: 0.5530 - r_squared: 0.9953 - 3s/epoch - 3ms/step
+## 861/861 - 3s - loss: 1.0349 - mean_absolute_error: 0.5944 - r_squared: 0.9942 - 3s/epoch - 4ms/step
 ## Epoch 13/17
-## 861/861 - 2s - loss: 0.4606 - mean_absolute_error: 0.4409 - r_squared: 0.9974 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 1.2341 - mean_absolute_error: 0.6273 - r_squared: 0.9931 - 2s/epoch - 2ms/step
 ## Epoch 14/17
-## 861/861 - 2s - loss: 0.4916 - mean_absolute_error: 0.4707 - r_squared: 0.9972 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 0.8695 - mean_absolute_error: 0.5777 - r_squared: 0.9951 - 2s/epoch - 2ms/step
 ## Epoch 15/17
-## 861/861 - 3s - loss: 0.4936 - mean_absolute_error: 0.4635 - r_squared: 0.9972 - 3s/epoch - 3ms/step
+## 861/861 - 3s - loss: 0.7651 - mean_absolute_error: 0.5695 - r_squared: 0.9956 - 3s/epoch - 3ms/step
 ## Epoch 16/17
-## 861/861 - 2s - loss: 0.5649 - mean_absolute_error: 0.5014 - r_squared: 0.9968 - 2s/epoch - 2ms/step
+## 861/861 - 2s - loss: 0.8835 - mean_absolute_error: 0.6209 - r_squared: 0.9950 - 2s/epoch - 2ms/step
 ## Epoch 17/17
-## 861/861 - 2s - loss: 0.7898 - mean_absolute_error: 0.5578 - r_squared: 0.9955 - 2s/epoch - 2ms/step</code></pre>
+## 861/861 - 2s - loss: 0.5813 - mean_absolute_error: 0.5071 - r_squared: 0.9966 - 2s/epoch - 2ms/step</code></pre>
 <pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
-<pre><code>## 287/287 - 0s - loss: 0.4457 - mean_absolute_error: 0.4421 - r_squared: -1.1206e+00 - 464ms/epoch - 2ms/step</code></pre>
+<pre><code>## 287/287 - 1s - loss: 0.9225 - mean_absolute_error: 0.6253 - r_squared: -3.7630e+00 - 610ms/epoch - 2ms/step</code></pre>
 <p><a name="NNmod3"></a></p>
 </div>
 <div id="neural-network-model-attempt-3" class="section level2">
@@ -777,44 +778,44 @@ model %&gt;%
     epochs = 17
   )</code></pre>
 <pre><code>## Epoch 1/17
-## 861/861 - 4s - loss: 0.0321 - mean_absolute_error: 0.0748 - r_squared: 0.3433 - 4s/epoch - 5ms/step
+## 861/861 - 3s - loss: 0.0041 - mean_absolute_error: 0.0355 - r_squared: 0.9236 - 3s/epoch - 3ms/step
 ## Epoch 2/17
-## 861/861 - 2s - loss: 0.0018 - mean_absolute_error: 0.0261 - r_squared: 0.9650 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 6.0696e-04 - mean_absolute_error: 0.0142 - r_squared: 0.9884 - 2s/epoch - 2ms/step
 ## Epoch 3/17
-## 861/861 - 3s - loss: 8.1194e-04 - mean_absolute_error: 0.0173 - r_squared: 0.9844 - 3s/epoch - 3ms/step
+## 861/861 - 1s - loss: 3.0080e-04 - mean_absolute_error: 0.0105 - r_squared: 0.9941 - 1s/epoch - 2ms/step
 ## Epoch 4/17
-## 861/861 - 3s - loss: 5.0467e-04 - mean_absolute_error: 0.0136 - r_squared: 0.9904 - 3s/epoch - 4ms/step
+## 861/861 - 2s - loss: 2.2592e-04 - mean_absolute_error: 0.0090 - r_squared: 0.9956 - 2s/epoch - 2ms/step
 ## Epoch 5/17
-## 861/861 - 3s - loss: 4.1995e-04 - mean_absolute_error: 0.0128 - r_squared: 0.9919 - 3s/epoch - 3ms/step
+## 861/861 - 2s - loss: 2.1907e-04 - mean_absolute_error: 0.0093 - r_squared: 0.9958 - 2s/epoch - 2ms/step
 ## Epoch 6/17
-## 861/861 - 2s - loss: 3.6516e-04 - mean_absolute_error: 0.0120 - r_squared: 0.9927 - 2s/epoch - 2ms/step
+## 861/861 - 2s - loss: 1.9668e-04 - mean_absolute_error: 0.0088 - r_squared: 0.9962 - 2s/epoch - 3ms/step
 ## Epoch 7/17
-## 861/861 - 1s - loss: 3.1721e-04 - mean_absolute_error: 0.0112 - r_squared: 0.9939 - 1s/epoch - 2ms/step
+## 861/861 - 2s - loss: 1.6501e-04 - mean_absolute_error: 0.0079 - r_squared: 0.9968 - 2s/epoch - 2ms/step
 ## Epoch 8/17
-## 861/861 - 2s - loss: 2.9209e-04 - mean_absolute_error: 0.0110 - r_squared: 0.9943 - 2s/epoch - 2ms/step
+## 861/861 - 2s - loss: 1.6677e-04 - mean_absolute_error: 0.0083 - r_squared: 0.9968 - 2s/epoch - 3ms/step
 ## Epoch 9/17
-## 861/861 - 2s - loss: 2.6508e-04 - mean_absolute_error: 0.0104 - r_squared: 0.9949 - 2s/epoch - 3ms/step
+## 861/861 - 2s - loss: 1.5692e-04 - mean_absolute_error: 0.0078 - r_squared: 0.9970 - 2s/epoch - 3ms/step
 ## Epoch 10/17
-## 861/861 - 3s - loss: 2.4075e-04 - mean_absolute_error: 0.0101 - r_squared: 0.9954 - 3s/epoch - 3ms/step
+## 861/861 - 2s - loss: 1.4628e-04 - mean_absolute_error: 0.0076 - r_squared: 0.9972 - 2s/epoch - 3ms/step
 ## Epoch 11/17
-## 861/861 - 4s - loss: 2.1623e-04 - mean_absolute_error: 0.0095 - r_squared: 0.9957 - 4s/epoch - 4ms/step
+## 861/861 - 6s - loss: 1.3658e-04 - mean_absolute_error: 0.0074 - r_squared: 0.9974 - 6s/epoch - 7ms/step
 ## Epoch 12/17
-## 861/861 - 4s - loss: 2.0352e-04 - mean_absolute_error: 0.0091 - r_squared: 0.9961 - 4s/epoch - 4ms/step
+## 861/861 - 5s - loss: 1.2720e-04 - mean_absolute_error: 0.0073 - r_squared: 0.9976 - 5s/epoch - 6ms/step
 ## Epoch 13/17
-## 861/861 - 3s - loss: 1.9003e-04 - mean_absolute_error: 0.0089 - r_squared: 0.9963 - 3s/epoch - 4ms/step
+## 861/861 - 4s - loss: 1.2805e-04 - mean_absolute_error: 0.0073 - r_squared: 0.9975 - 4s/epoch - 5ms/step
 ## Epoch 14/17
-## 861/861 - 3s - loss: 1.7316e-04 - mean_absolute_error: 0.0084 - r_squared: 0.9967 - 3s/epoch - 4ms/step
+## 861/861 - 5s - loss: 1.1500e-04 - mean_absolute_error: 0.0068 - r_squared: 0.9978 - 5s/epoch - 6ms/step
 ## Epoch 15/17
-## 861/861 - 4s - loss: 1.6935e-04 - mean_absolute_error: 0.0083 - r_squared: 0.9967 - 4s/epoch - 5ms/step
+## 861/861 - 4s - loss: 1.0446e-04 - mean_absolute_error: 0.0064 - r_squared: 0.9980 - 4s/epoch - 5ms/step
 ## Epoch 16/17
-## 861/861 - 3s - loss: 1.6156e-04 - mean_absolute_error: 0.0082 - r_squared: 0.9969 - 3s/epoch - 4ms/step
+## 861/861 - 4s - loss: 1.0753e-04 - mean_absolute_error: 0.0066 - r_squared: 0.9979 - 4s/epoch - 4ms/step
 ## Epoch 17/17
-## 861/861 - 4s - loss: 1.5036e-04 - mean_absolute_error: 0.0078 - r_squared: 0.9971 - 4s/epoch - 4ms/step</code></pre>
+## 861/861 - 4s - loss: 1.0363e-04 - mean_absolute_error: 0.0065 - r_squared: 0.9980 - 4s/epoch - 4ms/step</code></pre>
 <pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 1.5382e-04 - mean_absolute_error: 0.0066 - r_squared: 0.9940 - 1s/epoch - 4ms/step</code></pre>
+<pre><code>## 287/287 - 1s - loss: 1.3302e-04 - mean_absolute_error: 0.0069 - r_squared: 0.9908 - 1s/epoch - 4ms/step</code></pre>
 </div>
 </div>
 
