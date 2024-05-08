@@ -34,8 +34,6 @@ our loss function for all of the attmepts is MSE and our accuracy function is MA
 ###What the project accomplishes and what remains to be done 
 the project accomplished our goal of predicting rating at high level of accuracy. we have MAE of .5 with r squared values of .99 and above with loss lower than 1. Possibly if we wanted to add another attempt with more features however we believe the model is to a level that is accurate enough where that wouldn't be necessary. 
 
-
-
 ### project work write up:
 
 ###Description of your design matrix, i.e. what are the features of the data, how the data was obtained (URLs for downloaded data), any preprocessing that you did with the data, and 2-3 sample rows of the design matrix, with explanation. Since your algorithm is supervised, indicate what you are using as label(s). Also mention the number of elements in the dataset. Any other relevant statistical (or other) properties of the data should be mentioned here. 
@@ -93,3 +91,5 @@ one challenge we faced was getting the engine and genre data to look the way we 
 #### What the project accomplishes and what remains to be done 
 -   The project accomplished our goal of predicting rating at high level of accuracy. we have MAE of .5 with r squared values of .99 and above with loss lower than 1. Possibly if we wanted to add another attempt with more features however we believe the model is to a level that is accurate enough where that wouldn't be necessary. 
 >>>>>>> 44181d132eaa71233267c0c215f7f2da1d4ed8f1
+
+
