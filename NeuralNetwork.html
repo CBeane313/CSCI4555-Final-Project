@@ -404,9 +404,11 @@ display: none;
 colnames(steamdata)[which(colnames(steamdata) == &quot;X1&quot;)] &lt;- &quot;id&quot;
 colnames(steamdata)[which(colnames(steamdata) == &quot;24_hour_peak&quot;)] &lt;- &quot;twenty4_hr_peak&quot;
 
+#Remove columns that won&#39;t be used
+steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
+
 #Drop NA observations 
 steamdata &lt;- na.omit(steamdata)
-
 
 #Extract game engine from detected_technologies
 steamdata$engine &lt;- ifelse(str_detect(steamdata$detected_technologies, &quot;Engine\\.&quot;), str_extract(steamdata$detected_technologies, &quot;(?&lt;=Engine\\.)(\\w+)&quot;), NA)
@@ -422,13 +424,7 @@ steamdata$primary_genre &lt;- gsub(&quot;\\s*\\(\\d+\\)&quot;, &quot;&quot;, ste
 
 #Make columns factors rather than strings
 steamdata$engine &lt;- as.factor(steamdata$engine)
-steamdata$developer &lt;- as.factor(steamdata$developer)
 steamdata$primary_genre &lt;- as.factor(steamdata$primary_genre)
-
-#Make dates actual dates
-steamdata$release &lt;- as.Date(steamdata$release)
-
-steamdata &lt;- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
 
 #Converts genres and engines to numbers for one hot encoding
 steamdata$primary_genre_number &lt;- factor(steamdata$primary_genre)
@@ -564,7 +560,8 @@ test &lt;- steamdata[-train_ind, ]</code></pre>
 </div>
 <div id="linear-model-for-comparison" class="section level2">
 <h2>Linear Model For Comparison</h2>
-<pre class="r"><code>linearmod &lt;- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage+primary_genre+all_time_peak, data = steamdata)
+<pre class="r"><code># Create simple linear model for comparison
+linearmod &lt;- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage+primary_genre+engine, data = steamdata)
 
 # Get predicted values
 predicted_values &lt;- predict(linearmod, newdata = test)</code></pre>
@@ -575,15 +572,16 @@ mae_value &lt;- mae(test$rating, predicted_values)
 
 sum&lt;-summary(linearmod)
 cat(&quot;R Squared =&quot;,sum$r.squared)</code></pre>
-<pre><code>## R Squared = 0.8920872</code></pre>
+<pre><code>## R Squared = 0.8946001</code></pre>
 <pre class="r"><code>cat(&quot;MAE =&quot;,mae_value)</code></pre>
-<pre><code>## MAE = 3.188779</code></pre>
+<pre><code>## MAE = 3.117513</code></pre>
 <p><a name="NNmod"></a></p>
 </div>
 <div id="neural-network-model-attempt-1" class="section level2">
 <h2>Neural Network Model Attempt 1</h2>
 <pre class="r"><code>set.seed(1234)
 
+# Remove columns that are used in later attempts to keep this model simpiler 
 attempt1train &lt;- subset(train, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 attempt1test &lt;- subset(test, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 
@@ -594,17 +592,20 @@ r_squared &lt;- custom_metric(&quot;r_squared&quot;, function(y_true, y_pred) {
   return(1 - SS_res /SS_tot)
 })
 
+# Model Structure
 model = keras_model_sequential() %&gt;%
   layer_dense(units = 64, activation = &quot;relu&quot;,input_shape=(3)) %&gt;%
   layer_dense(units = 64, activation = &quot;sigmoid&quot;) %&gt;%
   layer_dense(units = 1, activation = &quot;linear&quot;)
 
+# Provide metrics for learning
 model %&gt;% compile(
   loss = &quot;mse&quot;,
   optimizer = &quot;adam&quot;, 
   metrics = c(&quot;mean_absolute_error&quot;, r_squared)
 )
 
+# Make a matrix of all input training data
 trainx1 &lt;- as.matrix(subset(attempt1train, select = -c(rating)))
 
 model %&gt;%
@@ -614,50 +615,52 @@ model %&gt;%
     epochs = 17
   )</code></pre>
 <pre><code>## Epoch 1/17
-## 861/861 - 3s - loss: 2847.6255 - mean_absolute_error: 50.9689 - r_squared: -1.5515e+01 - 3s/epoch - 3ms/step
+## 869/869 - 3s - loss: 2903.1611 - mean_absolute_error: 51.5312 - r_squared: -1.5762e+01 - 3s/epoch - 3ms/step
 ## Epoch 2/17
-## 861/861 - 2s - loss: 1008.0245 - mean_absolute_error: 28.5309 - r_squared: -4.8855e+00 - 2s/epoch - 2ms/step
+## 869/869 - 2s - loss: 1044.0646 - mean_absolute_error: 29.1272 - r_squared: -5.0904e+00 - 2s/epoch - 2ms/step
 ## Epoch 3/17
-## 861/861 - 2s - loss: 313.3401 - mean_absolute_error: 14.0924 - r_squared: -8.1691e-01 - 2s/epoch - 2ms/step
+## 869/869 - 2s - loss: 330.7095 - mean_absolute_error: 14.5839 - r_squared: -9.2327e-01 - 2s/epoch - 3ms/step
 ## Epoch 4/17
-## 861/861 - 3s - loss: 92.1720 - mean_absolute_error: 6.4666 - r_squared: 0.4731 - 3s/epoch - 3ms/step
+## 869/869 - 3s - loss: 98.9218 - mean_absolute_error: 6.8185 - r_squared: 0.4312 - 3s/epoch - 4ms/step
 ## Epoch 5/17
-## 861/861 - 2s - loss: 29.0222 - mean_absolute_error: 3.0349 - r_squared: 0.8391 - 2s/epoch - 3ms/step
+## 869/869 - 5s - loss: 31.2509 - mean_absolute_error: 3.2061 - r_squared: 0.8232 - 5s/epoch - 5ms/step
 ## Epoch 6/17
-## 861/861 - 3s - loss: 10.6768 - mean_absolute_error: 1.6385 - r_squared: 0.9405 - 3s/epoch - 3ms/step
+## 869/869 - 4s - loss: 11.2158 - mean_absolute_error: 1.6276 - r_squared: 0.9386 - 4s/epoch - 4ms/step
 ## Epoch 7/17
-## 861/861 - 2s - loss: 4.4520 - mean_absolute_error: 0.9841 - r_squared: 0.9755 - 2s/epoch - 2ms/step
+## 869/869 - 4s - loss: 4.7495 - mean_absolute_error: 1.0464 - r_squared: 0.9738 - 4s/epoch - 4ms/step
 ## Epoch 8/17
-## 861/861 - 2s - loss: 2.1871 - mean_absolute_error: 0.7758 - r_squared: 0.9880 - 2s/epoch - 2ms/step
+## 869/869 - 3s - loss: 2.4359 - mean_absolute_error: 0.8329 - r_squared: 0.9866 - 3s/epoch - 3ms/step
 ## Epoch 9/17
-## 861/861 - 2s - loss: 1.2913 - mean_absolute_error: 0.6663 - r_squared: 0.9928 - 2s/epoch - 2ms/step
+## 869/869 - 4s - loss: 1.4336 - mean_absolute_error: 0.6806 - r_squared: 0.9923 - 4s/epoch - 4ms/step
 ## Epoch 10/17
-## 861/861 - 2s - loss: 1.1212 - mean_absolute_error: 0.6189 - r_squared: 0.9938 - 2s/epoch - 2ms/step
+## 869/869 - 4s - loss: 0.9075 - mean_absolute_error: 0.5630 - r_squared: 0.9949 - 4s/epoch - 4ms/step
 ## Epoch 11/17
-## 861/861 - 2s - loss: 0.8547 - mean_absolute_error: 0.5469 - r_squared: 0.9953 - 2s/epoch - 2ms/step
+## 869/869 - 4s - loss: 0.7426 - mean_absolute_error: 0.5317 - r_squared: 0.9959 - 4s/epoch - 4ms/step
 ## Epoch 12/17
-## 861/861 - 2s - loss: 0.7693 - mean_absolute_error: 0.5490 - r_squared: 0.9957 - 2s/epoch - 2ms/step
+## 869/869 - 4s - loss: 0.7555 - mean_absolute_error: 0.5642 - r_squared: 0.9957 - 4s/epoch - 4ms/step
 ## Epoch 13/17
-## 861/861 - 2s - loss: 1.0365 - mean_absolute_error: 0.6702 - r_squared: 0.9940 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 0.8075 - mean_absolute_error: 0.5999 - r_squared: 0.9955 - 4s/epoch - 5ms/step
 ## Epoch 14/17
-## 861/861 - 2s - loss: 0.6618 - mean_absolute_error: 0.5127 - r_squared: 0.9963 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 0.5978 - mean_absolute_error: 0.5340 - r_squared: 0.9966 - 4s/epoch - 4ms/step
 ## Epoch 15/17
-## 861/861 - 2s - loss: 0.4712 - mean_absolute_error: 0.4649 - r_squared: 0.9974 - 2s/epoch - 3ms/step
+## 869/869 - 3s - loss: 0.7674 - mean_absolute_error: 0.5983 - r_squared: 0.9956 - 3s/epoch - 4ms/step
 ## Epoch 16/17
-## 861/861 - 2s - loss: 0.4576 - mean_absolute_error: 0.4531 - r_squared: 0.9974 - 2s/epoch - 3ms/step
+## 869/869 - 3s - loss: 0.7963 - mean_absolute_error: 0.5715 - r_squared: 0.9955 - 3s/epoch - 4ms/step
 ## Epoch 17/17
-## 861/861 - 2s - loss: 0.9991 - mean_absolute_error: 0.5659 - r_squared: 0.9942 - 2s/epoch - 3ms/step</code></pre>
-<pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
+## 869/869 - 3s - loss: 0.5468 - mean_absolute_error: 0.4818 - r_squared: 0.9969 - 3s/epoch - 3ms/step</code></pre>
+<pre class="r"><code># Make a matrix of all input testing data
+testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 0.4584 - mean_absolute_error: 0.4160 - r_squared: -2.8791e-01 - 871ms/epoch - 3ms/step</code></pre>
+<pre><code>## 290/290 - 1s - loss: 0.7047 - mean_absolute_error: 0.5744 - r_squared: -1.1627e+00 - 1s/epoch - 4ms/step</code></pre>
 <p><a name="NNmod2"></a></p>
 </div>
 <div id="neural-network-model-attempt-2" class="section level2">
 <h2>Neural Network Model Attempt 2</h2>
 <pre class="r"><code>set.seed(1234)
 
+# Remove unused features
 attempt1train &lt;- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 attempt1test &lt;- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 
@@ -688,44 +691,44 @@ model %&gt;%
     epochs = 17
   )</code></pre>
 <pre><code>## Epoch 1/17
-## 861/861 - 4s - loss: 2709.3369 - mean_absolute_error: 49.5836 - r_squared: -1.4607e+01 - 4s/epoch - 5ms/step
+## 869/869 - 7s - loss: 2402.5876 - mean_absolute_error: 46.1855 - r_squared: -1.2946e+01 - 7s/epoch - 8ms/step
 ## Epoch 2/17
-## 861/861 - 3s - loss: 911.8293 - mean_absolute_error: 26.8511 - r_squared: -4.2742e+00 - 3s/epoch - 3ms/step
+## 869/869 - 4s - loss: 635.0472 - mean_absolute_error: 21.5333 - r_squared: -2.6938e+00 - 4s/epoch - 5ms/step
 ## Epoch 3/17
-## 861/861 - 2s - loss: 265.6905 - mean_absolute_error: 12.7032 - r_squared: -5.3597e-01 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 142.9367 - mean_absolute_error: 8.4982 - r_squared: 0.1741 - 4s/epoch - 4ms/step
 ## Epoch 4/17
-## 861/861 - 2s - loss: 74.7029 - mean_absolute_error: 5.6270 - r_squared: 0.5741 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 32.2029 - mean_absolute_error: 3.2514 - r_squared: 0.8200 - 4s/epoch - 5ms/step
 ## Epoch 5/17
-## 861/861 - 3s - loss: 23.3462 - mean_absolute_error: 2.6735 - r_squared: 0.8689 - 3s/epoch - 3ms/step
+## 869/869 - 4s - loss: 10.1380 - mean_absolute_error: 1.6013 - r_squared: 0.9444 - 4s/epoch - 4ms/step
 ## Epoch 6/17
-## 861/861 - 2s - loss: 8.8237 - mean_absolute_error: 1.4760 - r_squared: 0.9515 - 2s/epoch - 3ms/step
+## 869/869 - 5s - loss: 3.9745 - mean_absolute_error: 0.9605 - r_squared: 0.9783 - 5s/epoch - 5ms/step
 ## Epoch 7/17
-## 861/861 - 3s - loss: 3.7739 - mean_absolute_error: 0.9363 - r_squared: 0.9790 - 3s/epoch - 3ms/step
+## 869/869 - 5s - loss: 1.7317 - mean_absolute_error: 0.7047 - r_squared: 0.9904 - 5s/epoch - 5ms/step
 ## Epoch 8/17
-## 861/861 - 2s - loss: 1.8816 - mean_absolute_error: 0.7058 - r_squared: 0.9896 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 1.0813 - mean_absolute_error: 0.6093 - r_squared: 0.9940 - 4s/epoch - 4ms/step
 ## Epoch 9/17
-## 861/861 - 2s - loss: 1.0868 - mean_absolute_error: 0.5824 - r_squared: 0.9940 - 2s/epoch - 3ms/step
+## 869/869 - 3s - loss: 0.7777 - mean_absolute_error: 0.5045 - r_squared: 0.9957 - 3s/epoch - 3ms/step
 ## Epoch 10/17
-## 861/861 - 3s - loss: 0.8462 - mean_absolute_error: 0.5816 - r_squared: 0.9952 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 1.8225 - mean_absolute_error: 0.7291 - r_squared: 0.9899 - 2s/epoch - 3ms/step
 ## Epoch 11/17
-## 861/861 - 3s - loss: 0.9786 - mean_absolute_error: 0.6039 - r_squared: 0.9944 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 0.7623 - mean_absolute_error: 0.4894 - r_squared: 0.9959 - 2s/epoch - 2ms/step
 ## Epoch 12/17
-## 861/861 - 3s - loss: 0.7906 - mean_absolute_error: 0.5410 - r_squared: 0.9956 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 0.5768 - mean_absolute_error: 0.4804 - r_squared: 0.9967 - 2s/epoch - 2ms/step
 ## Epoch 13/17
-## 861/861 - 2s - loss: 0.7482 - mean_absolute_error: 0.5440 - r_squared: 0.9958 - 2s/epoch - 3ms/step
+## 869/869 - 3s - loss: 0.5834 - mean_absolute_error: 0.4960 - r_squared: 0.9967 - 3s/epoch - 3ms/step
 ## Epoch 14/17
-## 861/861 - 2s - loss: 0.6318 - mean_absolute_error: 0.5281 - r_squared: 0.9963 - 2s/epoch - 3ms/step
+## 869/869 - 3s - loss: 0.4923 - mean_absolute_error: 0.4584 - r_squared: 0.9972 - 3s/epoch - 4ms/step
 ## Epoch 15/17
-## 861/861 - 2s - loss: 0.4731 - mean_absolute_error: 0.4556 - r_squared: 0.9973 - 2s/epoch - 2ms/step
+## 869/869 - 2s - loss: 0.6694 - mean_absolute_error: 0.5159 - r_squared: 0.9962 - 2s/epoch - 2ms/step
 ## Epoch 16/17
-## 861/861 - 2s - loss: 0.7984 - mean_absolute_error: 0.5699 - r_squared: 0.9953 - 2s/epoch - 2ms/step
+## 869/869 - 2s - loss: 0.6382 - mean_absolute_error: 0.5191 - r_squared: 0.9964 - 2s/epoch - 2ms/step
 ## Epoch 17/17
-## 861/861 - 2s - loss: 0.7485 - mean_absolute_error: 0.5544 - r_squared: 0.9957 - 2s/epoch - 2ms/step</code></pre>
+## 869/869 - 4s - loss: 0.3446 - mean_absolute_error: 0.3813 - r_squared: 0.9981 - 4s/epoch - 4ms/step</code></pre>
 <pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 0.9458 - mean_absolute_error: 0.7148 - r_squared: -4.3758e+00 - 501ms/epoch - 2ms/step</code></pre>
+<pre><code>## 290/290 - 1s - loss: 1.1509 - mean_absolute_error: 0.8227 - r_squared: -3.7147e+00 - 1s/epoch - 5ms/step</code></pre>
 <p><a name="NNmod3"></a></p>
 </div>
 <div id="neural-network-model-attempt-3" class="section level2">
@@ -739,13 +742,15 @@ normalize &lt;- function(x) {
 attempt1train &lt;- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 attempt1test &lt;- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 
-normtrain &lt;- keras::normalize(attempt1train[,c(1:4)], order = 2 )
+# Normalize training data with L1 norm
+normtrain &lt;- keras::normalize(attempt1train[,c(1:4)], order = 1 )
 attempt1train[1]=normtrain[1]
 attempt1train[2]=normtrain[2]
 attempt1train[3]=normtrain[3]
 attempt1train[4]=normtrain[4]
 
-normtest &lt;- keras::normalize(attempt1test[,c(1:4)], order = 2 )
+# Normalize testing data with L1 norm
+normtest &lt;- keras::normalize(attempt1test[,c(1:4)], order = 1 )
 attempt1test[1]=normtest[1]
 attempt1test[2]=normtest[2]
 attempt1test[3]=normtest[3]
@@ -778,44 +783,44 @@ model %&gt;%
     epochs = 17
   )</code></pre>
 <pre><code>## Epoch 1/17
-## 861/861 - 3s - loss: 0.0092 - mean_absolute_error: 0.0461 - r_squared: 0.8214 - 3s/epoch - 4ms/step
+## 869/869 - 3s - loss: 0.0013 - mean_absolute_error: 0.0177 - r_squared: 0.9329 - 3s/epoch - 3ms/step
 ## Epoch 2/17
-## 861/861 - 3s - loss: 8.7374e-04 - mean_absolute_error: 0.0175 - r_squared: 0.9834 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 1.0671e-04 - mean_absolute_error: 0.0063 - r_squared: 0.9942 - 2s/epoch - 2ms/step
 ## Epoch 3/17
-## 861/861 - 2s - loss: 4.3056e-04 - mean_absolute_error: 0.0123 - r_squared: 0.9917 - 2s/epoch - 2ms/step
+## 869/869 - 2s - loss: 6.0846e-05 - mean_absolute_error: 0.0051 - r_squared: 0.9966 - 2s/epoch - 2ms/step
 ## Epoch 4/17
-## 861/861 - 2s - loss: 3.1155e-04 - mean_absolute_error: 0.0106 - r_squared: 0.9940 - 2s/epoch - 2ms/step
+## 869/869 - 2s - loss: 5.4077e-05 - mean_absolute_error: 0.0051 - r_squared: 0.9970 - 2s/epoch - 2ms/step
 ## Epoch 5/17
-## 861/861 - 2s - loss: 2.5443e-04 - mean_absolute_error: 0.0097 - r_squared: 0.9950 - 2s/epoch - 3ms/step
+## 869/869 - 2s - loss: 5.2186e-05 - mean_absolute_error: 0.0050 - r_squared: 0.9971 - 2s/epoch - 2ms/step
 ## Epoch 6/17
-## 861/861 - 2s - loss: 2.2579e-04 - mean_absolute_error: 0.0092 - r_squared: 0.9957 - 2s/epoch - 3ms/step
+## 869/869 - 2s - loss: 4.3335e-05 - mean_absolute_error: 0.0045 - r_squared: 0.9976 - 2s/epoch - 2ms/step
 ## Epoch 7/17
-## 861/861 - 3s - loss: 2.1275e-04 - mean_absolute_error: 0.0091 - r_squared: 0.9959 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 4.2055e-05 - mean_absolute_error: 0.0045 - r_squared: 0.9976 - 2s/epoch - 3ms/step
 ## Epoch 8/17
-## 861/861 - 3s - loss: 1.8136e-04 - mean_absolute_error: 0.0081 - r_squared: 0.9965 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 3.6173e-05 - mean_absolute_error: 0.0042 - r_squared: 0.9980 - 2s/epoch - 3ms/step
 ## Epoch 9/17
-## 861/861 - 3s - loss: 1.7786e-04 - mean_absolute_error: 0.0083 - r_squared: 0.9966 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 3.5395e-05 - mean_absolute_error: 0.0041 - r_squared: 0.9980 - 2s/epoch - 2ms/step
 ## Epoch 10/17
-## 861/861 - 3s - loss: 1.5661e-04 - mean_absolute_error: 0.0076 - r_squared: 0.9970 - 3s/epoch - 3ms/step
+## 869/869 - 2s - loss: 3.7647e-05 - mean_absolute_error: 0.0044 - r_squared: 0.9979 - 2s/epoch - 2ms/step
 ## Epoch 11/17
-## 861/861 - 2s - loss: 1.5464e-04 - mean_absolute_error: 0.0076 - r_squared: 0.9970 - 2s/epoch - 3ms/step
+## 869/869 - 2s - loss: 2.9960e-05 - mean_absolute_error: 0.0038 - r_squared: 0.9983 - 2s/epoch - 2ms/step
 ## Epoch 12/17
-## 861/861 - 2s - loss: 1.5541e-04 - mean_absolute_error: 0.0080 - r_squared: 0.9970 - 2s/epoch - 2ms/step
+## 869/869 - 4s - loss: 2.8961e-05 - mean_absolute_error: 0.0037 - r_squared: 0.9984 - 4s/epoch - 4ms/step
 ## Epoch 13/17
-## 861/861 - 2s - loss: 1.3206e-04 - mean_absolute_error: 0.0070 - r_squared: 0.9974 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 2.7206e-05 - mean_absolute_error: 0.0036 - r_squared: 0.9985 - 4s/epoch - 5ms/step
 ## Epoch 14/17
-## 861/861 - 3s - loss: 1.1888e-04 - mean_absolute_error: 0.0066 - r_squared: 0.9977 - 3s/epoch - 3ms/step
+## 869/869 - 4s - loss: 2.5930e-05 - mean_absolute_error: 0.0035 - r_squared: 0.9985 - 4s/epoch - 5ms/step
 ## Epoch 15/17
-## 861/861 - 2s - loss: 1.2342e-04 - mean_absolute_error: 0.0071 - r_squared: 0.9976 - 2s/epoch - 3ms/step
+## 869/869 - 4s - loss: 2.6528e-05 - mean_absolute_error: 0.0036 - r_squared: 0.9985 - 4s/epoch - 4ms/step
 ## Epoch 16/17
-## 861/861 - 3s - loss: 1.1718e-04 - mean_absolute_error: 0.0068 - r_squared: 0.9977 - 3s/epoch - 3ms/step
+## 869/869 - 4s - loss: 1.6485e-05 - mean_absolute_error: 0.0028 - r_squared: 0.9991 - 4s/epoch - 5ms/step
 ## Epoch 17/17
-## 861/861 - 2s - loss: 1.0897e-04 - mean_absolute_error: 0.0066 - r_squared: 0.9979 - 2s/epoch - 3ms/step</code></pre>
+## 869/869 - 5s - loss: 2.4789e-05 - mean_absolute_error: 0.0035 - r_squared: 0.9986 - 5s/epoch - 5ms/step</code></pre>
 <pre class="r"><code>testx1 &lt;- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
 results &lt;- model %&gt;% evaluate(testx1, attempt1test$rating)</code></pre>
-<pre><code>## 287/287 - 1s - loss: 1.4282e-04 - mean_absolute_error: 0.0057 - r_squared: 0.9936 - 598ms/epoch - 2ms/step</code></pre>
+<pre><code>## 290/290 - 1s - loss: 5.4261e-05 - mean_absolute_error: 0.0061 - r_squared: 0.9933 - 1s/epoch - 5ms/step</code></pre>
 </div>
 </div>
 

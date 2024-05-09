@@ -44,9 +44,11 @@ steamdata <- read_csv("steamGameData.csv", na = c("nan"))
 colnames(steamdata)[which(colnames(steamdata) == "X1")] <- "id"
 colnames(steamdata)[which(colnames(steamdata) == "24_hour_peak")] <- "twenty4_hr_peak"
 
+#Remove columns that won't be used
+steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
+
 #Drop NA observations 
 steamdata <- na.omit(steamdata)
-
 
 #Extract game engine from detected_technologies
 steamdata$engine <- ifelse(str_detect(steamdata$detected_technologies, "Engine\\."), str_extract(steamdata$detected_technologies, "(?<=Engine\\.)(\\w+)"), NA)
@@ -62,13 +64,7 @@ steamdata$primary_genre <- gsub("\\s*\\(\\d+\\)", "", steamdata$primary_genre)
 
 #Make columns factors rather than strings
 steamdata$engine <- as.factor(steamdata$engine)
-steamdata$developer <- as.factor(steamdata$developer)
 steamdata$primary_genre <- as.factor(steamdata$primary_genre)
-
-#Make dates actual dates
-steamdata$release <- as.Date(steamdata$release)
-
-steamdata <- subset(steamdata, select = -c(id, game, link, store_genres, store_asset_mod_time, players_right_now, twenty4_hr_peak, all_time_peak_date, publisher, release, developer, peak_players))
 
 #Converts genres and engines to numbers for one hot encoding
 steamdata$primary_genre_number <- factor(steamdata$primary_genre)
@@ -104,7 +100,8 @@ test <- steamdata[-train_ind, ]
 ## Linear Model For Comparison
 
 ```{r}
-linearmod <- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage+primary_genre+all_time_peak, data = steamdata)
+# Create simple linear model for comparison
+linearmod <- lm(rating ~ positive_reviews*negative_reviews*total_reviews*review_percentage+primary_genre+engine, data = steamdata)
 
 # Get predicted values
 predicted_values <- predict(linearmod, newdata = test)
@@ -124,6 +121,7 @@ cat("MAE =",mae_value)
 ```{r}
 set.seed(1234)
 
+# Remove columns that are used in later attempts to keep this model simpiler 
 attempt1train <- subset(train, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 attempt1test <- subset(test, select = -c(primary_genre,primary_genre_number,all_time_peak,engine,engine_number,negative_reviews))
 
@@ -134,17 +132,20 @@ r_squared <- custom_metric("r_squared", function(y_true, y_pred) {
   return(1 - SS_res /SS_tot)
 })
 
+# Model Structure
 model = keras_model_sequential() %>%
   layer_dense(units = 64, activation = "relu",input_shape=(3)) %>%
   layer_dense(units = 64, activation = "sigmoid") %>%
   layer_dense(units = 1, activation = "linear")
 
+# Provide metrics for learning
 model %>% compile(
   loss = "mse",
   optimizer = "adam", 
   metrics = c("mean_absolute_error", r_squared)
 )
 
+# Make a matrix of all input training data
 trainx1 <- as.matrix(subset(attempt1train, select = -c(rating)))
 
 model %>%
@@ -154,6 +155,7 @@ model %>%
     epochs = 17
   )
 
+# Make a matrix of all input testing data
 testx1 <- as.matrix(subset(attempt1test, select = -c(rating)))
 
 # R Squared in the evaluation is not calculated properly
@@ -168,6 +170,7 @@ results <- model %>% evaluate(testx1, attempt1test$rating)
 ```{r}
 set.seed(1234)
 
+# Remove unused features
 attempt1train <- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 attempt1test <- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 
@@ -218,13 +221,15 @@ normalize <- function(x) {
 attempt1train <- subset(train, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 attempt1test <- subset(test, select = -c(primary_genre,all_time_peak,engine,negative_reviews))
 
-normtrain <- keras::normalize(attempt1train[,c(1:4)], order = 2 )
+# Normalize training data with L1 norm
+normtrain <- keras::normalize(attempt1train[,c(1:4)], order = 1 )
 attempt1train[1]=normtrain[1]
 attempt1train[2]=normtrain[2]
 attempt1train[3]=normtrain[3]
 attempt1train[4]=normtrain[4]
 
-normtest <- keras::normalize(attempt1test[,c(1:4)], order = 2 )
+# Normalize testing data with L1 norm
+normtest <- keras::normalize(attempt1test[,c(1:4)], order = 1 )
 attempt1test[1]=normtest[1]
 attempt1test[2]=normtest[2]
 attempt1test[3]=normtest[3]
